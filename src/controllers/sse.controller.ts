@@ -1,9 +1,8 @@
-import { createRoute, z, type OpenAPIHono } from "@hono/zod-openapi";
-import type { ErrorSchema as _ErrorSchema } from "@mcpc/core";
-import { handleConnecting } from "@mcpc/core";
-import { server } from "../app.ts";
-import { INCOMING_MSG_ROUTE_PATH } from "../set-up-mcp.ts";
+/// <reference path="../types/hono.d.ts" />
 
+import { createRoute, z, type OpenAPIHono } from "@hono/zod-openapi";
+
+// Simplified SSE handler for backward compatibility
 export const sseHandler = (app: OpenAPIHono) =>
   app.openapi(
     createRoute({
@@ -16,7 +15,7 @@ export const sseHandler = (app: OpenAPIHono) =>
               schema: z.any(),
             },
           },
-          description: "Returns the processed message",
+          description: "DEPRECATED: Use /mcp endpoint with Streamable HTTP instead",
         },
         400: {
           content: {
@@ -28,23 +27,8 @@ export const sseHandler = (app: OpenAPIHono) =>
         },
       },
     }),
-    async (c) => {
-      const response = await handleConnecting(
-        c.req.raw,
-        server,
-        INCOMING_MSG_ROUTE_PATH
-      );
-      return response;
-    },
-    (result, c) => {
-      if (!result.success) {
-        return c.json(
-          {
-            code: 400,
-            message: result.error.message,
-          },
-          400
-        );
-      }
+    async (c: any) => {
+      // Redirect to the new streamable HTTP endpoint
+      return c.redirect("/mcp", 301);
     }
   );

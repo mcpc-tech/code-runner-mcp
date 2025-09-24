@@ -1,0 +1,9 @@
+.do
+TEST_SUMMARY.md
+PULL_REQUEST_TEMPLATE.md
+
+# Test files
+test-mcp.bat
+test-mcp.ps1
+test-mcp.js
+test-mcp.py

@@ -1,0 +1,22 @@
+# Simple DigitalOcean App Platform configuration
+name: code-runner-mcp
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: ANC-DOMINATER/code-runner-mcp
+    branch: main
+    deploy_on_push: true
+  dockerfile_path: Dockerfile
+  http_port: 9000
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  envs:
+  - key: PORT
+    value: "9000"
+  - key: DENO_PERMISSION_ARGS
+    value: "--allow-net"
+  - key: NODEFS_ROOT
+    value: "/tmp"
+  - key: NODEFS_MOUNT_POINT
+    value: "/tmp"

@@ -2,13 +2,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { runJS } from "./service/js-runner.ts";
 import { runPy } from "./service/py-runner.ts";
 import { z } from "zod";
-import process from "node:process";
+// import process from "node:process"; // Use Deno.env instead
 
-const nodeFSRoot = process.env.NODEFS_ROOT;
-const nodeFSMountPoint = process.env.NODEFS_MOUNT_POINT;
-const denoPermissionArgs = process.env.DENO_PERMISSION_ARGS || "--allow-net";
+const nodeFSRoot = Deno.env.get("NODEFS_ROOT");
+const nodeFSMountPoint = Deno.env.get("NODEFS_MOUNT_POINT");
+const denoPermissionArgs = Deno.env.get("DENO_PERMISSION_ARGS") || "--allow-net";
 
-export const INCOMING_MSG_ROUTE_PATH = "/code-runner/messages";
+export const INCOMING_MSG_ROUTE_PATH = "/messages";
 
 /**
  * TODO: Stream tool result;
@@ -83,8 +83,16 @@ You can **ONLY** access files at \`${
       const stream = await runPy(code, options, extra.signal);
       const decoder = new TextDecoder();
       let output = "";
-      for await (const chunk of stream) {
-        output += decoder.decode(chunk);
+      
+      const reader = stream.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          output += decoder.decode(value);
+        }
+      } finally {
+        reader.releaseLock();
       }
       return {
         content: [{ type: "text", text: output || "(no output)" }],
@@ -126,8 +134,16 @@ Send only valid JavaScript/TypeScript code compatible with Deno runtime (prefer 
       const stream = await runJS(code, extra.signal);
       const decoder = new TextDecoder();
       let output = "";
-      for await (const chunk of stream) {
-        output += decoder.decode(chunk);
+      
+      const reader = stream.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          output += decoder.decode(value);
+        }
+      } finally {
+        reader.releaseLock();
       }
       return {
         content: [{ type: "text", text: output || "(no output)" }],

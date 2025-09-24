@@ -3,7 +3,7 @@ import { makeStream } from "../tool/py.ts";
 import type { Buffer } from "node:buffer";
 import path, { join } from "node:path";
 import { mkdirSync } from "node:fs";
-import process from "node:process";
+// import process from "node:process"; // Use Deno.env instead
 import { tmpdir } from "node:os";
 
 const projectRoot = tmpdir();
@@ -27,7 +27,7 @@ export function runJS(
   // Launch Deno: `deno run --quiet -` reads the script from stdin
   console.log("[start][js] spawn");
   const userProvidedPermissions =
-    process.env.DENO_PERMISSION_ARGS?.split(" ") ?? [];
+    Deno.env.get("DENO_PERMISSION_ARGS")?.split(" ") ?? [];
   const selfPermissions = [`--allow-read=${cwd}/`, `--allow-write=${cwd}/`];
 
   // Note: --allow-* cannot be used with '--allow-all'
@@ -46,7 +46,7 @@ export function runJS(
       stdio: ["pipe", "pipe", "pipe"],
       cwd,
       env: {
-        ...process.env,
+        ...Deno.env.toObject(),
         DENO_DIR: join(cwd, ".deno"),
       },
     }

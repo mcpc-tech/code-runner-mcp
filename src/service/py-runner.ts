@@ -1,13 +1,41 @@
+/// <reference path="../types/pyodide.d.ts" />
+
 import type { PyodideInterface } from "pyodide";
 import { getPyodide, getPip, loadDeps, makeStream } from "../tool/py.ts";
 
 // const EXEC_TIMEOUT = 1000;
 const EXEC_TIMEOUT = 1000 * 60 * 3; // 3 minutes for heavy imports like pandas
+const INIT_TIMEOUT = 1000 * 60; // 1 minute for initialization
 
-// Cache pyodide instance
+// Cache pyodide instance with lazy initialization
+let initializationPromise: Promise<void> | null = null;
+
+const initializePyodide = async () => {
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      try {
+        console.log("[py] Starting background Pyodide initialization...");
+        await getPyodide();
+        // Don't load micropip here - load it only when needed
+        console.log("[py] Background Pyodide initialization completed");
+      } catch (error) {
+        console.error("[py] Background initialization failed:", error);
+        initializationPromise = null; // Reset to allow retry
+        throw error;
+      }
+    })();
+  }
+  return initializationPromise;
+};
+
+// Export the initialization function for health checks
+export { initializePyodide };
+
+// Start initialization in background but don't wait for it
 queueMicrotask(() => {
-  getPyodide();
-  getPip();
+  initializePyodide().catch((error) => {
+    console.warn("[py] Background initialization failed, will retry on first use:", error);
+  });
 });
 
 const encoder = new TextEncoder();
@@ -55,15 +83,65 @@ export async function runPy(
     signal = abortSignal;
   }
 
-  const pyodide = await getPyodide();
+  // Initialize Pyodide with timeout protection
+  let pyodide: any; // Use any type to avoid PyodideInterface type issues
+  try {
+    console.log("[py] Ensuring Pyodide is initialized...");
+    
+    // Use initialization timeout to prevent hanging
+    const initPromise = Promise.race([
+      (async () => {
+        await initializePyodide();
+        return await getPyodide();
+      })(),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error("Pyodide initialization timeout"));
+        }, INIT_TIMEOUT);
+      })
+    ]);
+    
+    pyodide = await initPromise;
+    console.log("[py] Pyodide initialization completed");
+  } catch (initError) {
+    console.error("[py] Pyodide initialization failed:", initError);
+    
+    // Return an error stream immediately
+    return new ReadableStream({
+      start(controller) {
+        const encoder = new TextEncoder();
+        const errorMessage = `[ERROR] Python runtime initialization failed: ${initError instanceof Error ? initError.message : 'Unknown error'}\n`;
+        controller.enqueue(encoder.encode(errorMessage));
+        controller.close();
+      }
+    });
+  }
 
   // Set up file system if options provided
   if (options) {
-    setupPyodideFileSystem(pyodide, options);
+    try {
+      setupPyodideFileSystem(pyodide, options);
+    } catch (fsError) {
+      console.error("[py] File system setup error:", fsError);
+      // Continue execution even if FS setup fails
+    }
   }
 
-  // Load packages
-  await loadDeps(code, options?.importToPackageMap);
+  // Re-enabled smart package loading with hybrid Pyodide/micropip approach
+  // This now properly handles both Pyodide packages and micropip packages
+  let dependencyLoadingFailed = false;
+  let dependencyError: Error | null = null;
+  
+  try {
+    console.log("[py] Starting smart package loading...");
+    await loadDeps(code, options?.importToPackageMap);
+    console.log("[py] Package loading completed successfully");
+  } catch (depError) {
+    console.error("[py] Dependency loading error:", depError);
+    dependencyLoadingFailed = true;
+    dependencyError = depError instanceof Error ? depError : new Error('Unknown dependency error');
+    // Continue execution - some packages might still work
+  }
 
   // Interrupt buffer to be set when aborting
   const interruptBuffer = new Int32Array(
@@ -163,7 +241,28 @@ export async function runPy(
           // If an abort happened before execution – don't run
           if (signal?.aborted) return;
 
+          // Show warning if dependency loading failed
+          if (dependencyLoadingFailed && dependencyError) {
+            const warningMsg = `[WARNING] Package installation failed due to network/micropip issues.\nSome imports (like nltk, sklearn) may not be available.\nError: ${dependencyError.message}\n\nAttempting to run code anyway...\n\n`;
+            push("")(warningMsg);
+          }
+
+          // Validate code before execution
+          if (!code || typeof code !== 'string') {
+            throw new Error("Invalid code: must be a non-empty string");
+          }
+
+          // Clean up any existing state
+          try {
+            pyodide.runPython("import sys; sys.stdout.flush(); sys.stderr.flush()");
+          } catch (cleanupError) {
+            console.warn("[py] Cleanup warning:", cleanupError);
+          }
+
+          console.log("[py] Executing code:", code.substring(0, 100) + (code.length > 100 ? "..." : ""));
+          
           await pyodide.runPythonAsync(code);
+          
           clearTimeout(timeout);
           if (!streamClosed) {
             controller.close();
@@ -173,8 +272,16 @@ export async function runPy(
             pyodide.setStderr({});
           }
         } catch (err) {
+          console.error("[py] Execution error:", err);
           clearTimeout(timeout);
           if (!streamClosed) {
+            // Try to send error info to the stream before closing
+            try {
+              const errorMessage = err instanceof Error ? err.message : String(err);
+              controller.enqueue(encoder.encode(`[ERROR] ${errorMessage}\n`));
+            } catch (streamError) {
+              console.error("[py] Error sending error message:", streamError);
+            }
             controller.error(err);
             streamClosed = true;
             // Clear handlers to prevent further writes
