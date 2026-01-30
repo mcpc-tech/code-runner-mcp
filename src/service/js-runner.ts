@@ -61,18 +61,27 @@ export function runJS(
   proc.stdin.write(code);
   proc.stdin.end();
 
+  let streamClosed = false;
+
   const forward =
     (controller: ReadableStreamDefaultController<Uint8Array>, prefix = "") =>
     (chunk: Buffer | string) => {
-      const data = typeof chunk === "string"
-        ? encoder.encode(prefix + chunk)
-        : new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+      if (streamClosed) return;
 
-      // For stderr add prefix only once at beginning of line
-      if (prefix) {
-        controller.enqueue(encoder.encode(prefix));
+      try {
+        // For stderr add prefix only once at beginning of line
+        if (prefix) {
+          controller.enqueue(encoder.encode(prefix));
+        }
+
+        const data = typeof chunk === "string"
+          ? encoder.encode(chunk)
+          : new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+        controller.enqueue(data);
+      } catch {
+        // Stream is already closed, ignore
+        streamClosed = true;
       }
-      controller.enqueue(data);
     };
 
   const stream = makeStream(
@@ -90,12 +99,23 @@ export function runJS(
       proc.stderr.on("data", forward(controller, "[stderr] "));
       proc.on("close", () => {
         clearTimeout(timeout);
-        if (!controller.desiredSize) return;
-        controller.close();
+        if (streamClosed) return;
+        streamClosed = true;
+        try {
+          controller.close();
+        } catch {
+          // Already closed
+        }
       });
       proc.on("error", (err) => {
         clearTimeout(timeout);
-        controller.error(err);
+        if (streamClosed) return;
+        streamClosed = true;
+        try {
+          controller.error(err);
+        } catch {
+          // Already closed
+        }
       });
     },
     () => {

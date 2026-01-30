@@ -1,0 +1,107 @@
+name: Code Runner MCP - Deno Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "mod.ts"
+      - "deno.json"
+      - "deno.lock"
+      - ".github/workflows/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "mod.ts"
+      - "deno.json"
+      - "deno.lock"
+      - ".github/workflows/**"
+
+jobs:
+  test:
+    name: Test with Deno ${{ matrix.deno-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        deno-version: ["2.x"]
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Deno ${{ matrix.deno-version }}
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ matrix.deno-version }}
+
+      - name: Show Deno Version
+        run: deno --version
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ matrix.deno-version }}-${{ hashFiles('deno.lock') }}
+
+      - name: Install Dependencies
+        run: deno cache mod.ts
+
+      - name: Type Check
+        run: deno check mod.ts
+
+      - name: Run Tests
+        run: deno test -A
+
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.x
+
+      - name: Run Linter
+        run: deno lint
+
+      - name: Check Formatting
+        run: deno fmt --check
+
+  coverage:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+    needs: test
+    continue-on-error: true
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.x
+
+      - name: Run Tests with Coverage
+        run: deno test --allow-all --coverage=coverage tests/
+
+      - name: Generate Coverage Report
+        run: deno coverage coverage --lcov --output=coverage.lcov
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.lcov
+          flags: code-runner-mcp

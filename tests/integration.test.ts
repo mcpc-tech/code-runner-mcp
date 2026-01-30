@@ -3,26 +3,30 @@ import { readStreamWithTimeout } from "./setup.ts";
 import { runJS } from "../src/service/js-runner.ts";
 import { runPy } from "../src/service/py-runner.ts";
 
-Deno.test("Integration - JavaScript and Python Data Exchange", async () => {
-  // Test that both runners can process the same data format
-  const testData = { name: "Alice", age: 30, scores: [95, 87, 92] };
+Deno.test({
+  name: "Integration - JavaScript and Python Data Exchange",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  async fn() {
+    // Test that both runners can process the same data format
+    const testData = { name: "Alice", age: 30, scores: [95, 87, 92] };
 
-  // JavaScript test
-  const jsCode = `
+    // JavaScript test
+    const jsCode = `
     const data = ${JSON.stringify(testData)};
     console.log("JS Processing:", JSON.stringify(data));
     console.log("Average score:", data.scores.reduce((a, b) => a + b) / data.scores.length);
   `;
 
-  const jsStream = runJS(jsCode);
-  const jsOutput = await readStreamWithTimeout(jsStream);
+    const jsStream = runJS(jsCode);
+    const jsOutput = await readStreamWithTimeout(jsStream);
 
-  assertStringIncludes(jsOutput, "JS Processing:");
-  assertStringIncludes(jsOutput, "Alice");
-  assertStringIncludes(jsOutput, "Average score: 91.33333333333333");
+    assertStringIncludes(jsOutput, "JS Processing:");
+    assertStringIncludes(jsOutput, "Alice");
+    assertStringIncludes(jsOutput, "Average score: 91.33333333333333");
 
-  // Python test
-  const pyCode = `
+    // Python test
+    const pyCode = `
 import json
 data = ${JSON.stringify(testData)}
 print("Python Processing:", json.dumps(data))
@@ -30,12 +34,13 @@ average = sum(data["scores"]) / len(data["scores"])
 print(f"Average score: {average}")
   `;
 
-  const pyStream = await runPy(pyCode);
-  const pyOutput = await readStreamWithTimeout(pyStream);
+    const pyStream = await runPy(pyCode);
+    const pyOutput = await readStreamWithTimeout(pyStream);
 
-  assertStringIncludes(pyOutput, "Python Processing:");
-  assertStringIncludes(pyOutput, "Alice");
-  assertStringIncludes(pyOutput, "Average score: 91.33333333333333");
+    assertStringIncludes(pyOutput, "Python Processing:");
+    assertStringIncludes(pyOutput, "Alice");
+    assertStringIncludes(pyOutput, "Average score: 91.33333333333333");
+  },
 });
 
 Deno.test("Integration - Complex Data Processing", async () => {

@@ -56,9 +56,14 @@ Deno.test({
   async fn() {
     const code = `
 import micropip
-await micropip.install("requests")
-import requests
-print("Requests package installed successfully")
+import asyncio
+
+async def install_and_import():
+    await micropip.install("requests")
+    import requests
+    print("Requests package installed successfully")
+
+asyncio.run(install_and_import())
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 30000); // Longer timeout for package installation
@@ -113,11 +118,11 @@ print(f"Linear regression coefficient: {model.coef_[0]:.2f}")
 print("Multiple packages installation successful")
     `;
 
-    const importToPackageMap = {
+    const packages = {
       "sklearn": "scikit-learn",
     };
 
-    const stream = await runPy(code, { importToPackageMap });
+    const stream = await runPy(code, { packages });
     const output = await readStreamWithTimeout(stream, 60000); // Longer timeout for multiple packages
 
     assertStringIncludes(output, "DataFrame shape: (5, 2)");
@@ -143,13 +148,13 @@ print("BeautifulSoup imported successfully")
 print("Custom import map test successful")
     `;
 
-    const importToPackageMap = {
+    const packages = {
       "cv2": "opencv-python",
       "PIL": "Pillow",
       "bs4": "beautifulsoup4",
     };
 
-    const stream = await runPy(code, { importToPackageMap });
+    const stream = await runPy(code, { packages });
     const output = await readStreamWithTimeout(stream, 60000);
 
     assertStringIncludes(output, "OpenCV imported successfully");
@@ -233,12 +238,12 @@ print(f"Model accuracy: {accuracy:.2f}")
 print("Complex sklearn submodules test successful")
     `;
 
-    const importToPackageMap = {
+    const packages = {
       "sklearn": "scikit-learn",
       "pandas": "pandas",
     };
 
-    const stream = await runPy(code, { importToPackageMap });
+    const stream = await runPy(code, { packages });
     const output = await readStreamWithTimeout(stream, 60000);
 
     assertStringIncludes(output, "Training set size:");
