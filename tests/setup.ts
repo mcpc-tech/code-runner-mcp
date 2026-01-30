@@ -1,5 +1,10 @@
 // Test setup and utilities
-export { assertEquals, assertExists, assertRejects, assertStringIncludes } from "jsr:@std/assert";
+export {
+  assertEquals,
+  assertExists,
+  assertRejects,
+  assertStringIncludes,
+} from "jsr:@std/assert";
 
 // Helper to create a timeout-based abort signal for testing
 export function createTimeoutSignal(timeoutMs: number): AbortSignal {
@@ -9,10 +14,12 @@ export function createTimeoutSignal(timeoutMs: number): AbortSignal {
 }
 
 // Helper to read a ReadableStream to completion
-export async function readStreamToString(stream: ReadableStream<Uint8Array>): Promise<string> {
+export async function readStreamToString(
+  stream: ReadableStream<Uint8Array>,
+): Promise<string> {
   const decoder = new TextDecoder();
   let result = "";
-  
+
   const reader = stream.getReader();
   try {
     while (true) {
@@ -23,24 +30,27 @@ export async function readStreamToString(stream: ReadableStream<Uint8Array>): Pr
   } finally {
     reader.releaseLock();
   }
-  
+
   return result;
 }
 
 // Helper to read a stream with a timeout
 export function readStreamWithTimeout(
-  stream: ReadableStream<Uint8Array>, 
-  timeoutMs: number = 5000
+  stream: ReadableStream<Uint8Array>,
+  timeoutMs: number = 5000,
 ): Promise<string> {
   let timeoutId: number;
-  
+
   const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error(`Stream read timeout after ${timeoutMs}ms`)), timeoutMs);
+    timeoutId = setTimeout(
+      () => reject(new Error(`Stream read timeout after ${timeoutMs}ms`)),
+      timeoutMs,
+    );
   });
-  
+
   return Promise.race([
     readStreamToString(stream),
-    timeoutPromise
+    timeoutPromise,
   ]).finally(() => {
     // Clean up the timeout to prevent leaks
     if (timeoutId) {
@@ -51,15 +61,21 @@ export function readStreamWithTimeout(
 
 // Mock environment variables for testing
 export function withEnv<T>(envVars: Record<string, string>, fn: () => T): T;
-export function withEnv<T>(envVars: Record<string, string>, fn: () => Promise<T>): Promise<T>;
-export function withEnv<T>(envVars: Record<string, string>, fn: () => T | Promise<T>): T | Promise<T> {
+export function withEnv<T>(
+  envVars: Record<string, string>,
+  fn: () => Promise<T>,
+): Promise<T>;
+export function withEnv<T>(
+  envVars: Record<string, string>,
+  fn: () => T | Promise<T>,
+): T | Promise<T> {
   const originalEnv = { ...Deno.env.toObject() };
-  
+
   // Set test environment variables
   for (const [key, value] of Object.entries(envVars)) {
     Deno.env.set(key, value);
   }
-  
+
   const restoreEnv = () => {
     // Restore original environment
     for (const key of Object.keys(envVars)) {
@@ -70,15 +86,15 @@ export function withEnv<T>(envVars: Record<string, string>, fn: () => T | Promis
       }
     }
   };
-  
+
   try {
     const result = fn();
-    
+
     // Handle async functions
     if (result instanceof Promise) {
       return result.finally(restoreEnv);
     }
-    
+
     // Handle sync functions
     restoreEnv();
     return result;

@@ -1,7 +1,7 @@
 import {
   loadPyodide,
-  version as pyodideVersion,
   type PyodideInterface,
+  version as pyodideVersion,
 } from "pyodide";
 import process from "node:process";
 
@@ -34,7 +34,7 @@ export const getPip = async () => {
 
 export const loadDeps = async (
   code: string,
-  importToPackageMap: Record<string, string> = {}
+  importToPackageMap: Record<string, string> = {},
 ) => {
   const pyodide = await getPyodide();
 
@@ -105,54 +105,43 @@ result`;
 
     const pip = await getPip();
     if (imports && imports.length > 0) {
-      // Map import names to package names, handling dot notation
-      const packagesToInstall = imports.map((importName: string) => {
-        return combinedMap[importName] || importName;
-      });
-
-      // Remove duplicates and filter out empty strings
-      const uniquePackages = [...new Set(packagesToInstall)].filter(
-        (pkg) => typeof pkg === "string" && pkg.trim().length > 0
+      // Map import names to package names
+      const packagesToInstall = imports.map((imp: string) =>
+        imp in combinedMap ? combinedMap[imp] : imp
       );
-
-      if (uniquePackages.length === 0) {
-        console.log("[py] No packages to install after mapping");
-        return;
-      }
-
-      console.log("[py] Found missing imports:", imports);
-      console.log("[py] Installing packages:", uniquePackages);
 
       // Try batch installation first for better performance
       try {
-        await pip.install(uniquePackages);
-        console.log(
-          `[py] Successfully installed all packages: ${uniquePackages.join(
-            ", "
-          )}`
+        await pip.install(packagesToInstall);
+        console.error(
+          `[py] Successfully installed all packages: ${
+            packagesToInstall.join(
+              ", ",
+            )
+          }`,
         );
       } catch (_batchError) {
-        console.warn(
-          "[py] Batch installation failed, trying individual installation"
+        console.error(
+          "[py] Batch installation failed, trying individual installation",
         );
 
         // Fall back to individual installation
-        for (const pkg of uniquePackages) {
+        for (const pkg of packagesToInstall) {
           try {
             await pip.install(pkg);
-            console.log(`[py] Successfully installed: ${pkg}`);
+            console.error(`[py] Successfully installed: ${pkg}`);
           } catch (error) {
-            console.warn(`[py] Failed to install ${pkg}:`, error);
+            console.error(`[py] Failed to install ${pkg}:`, error);
             // Continue with other packages
           }
         }
       }
     } else {
-      console.log("[py] No missing imports detected");
+      console.error("[py] No missing imports detected");
     }
   } catch (error) {
     // If dependency loading fails, log but don't fail completely
-    console.warn("[py] Failed to load dependencies:", error);
+    console.error("[py] Failed to load dependencies:", error);
     // Continue execution without external dependencies
   }
 };
@@ -166,7 +155,7 @@ result`;
 export function makeStream(
   abortSignal: AbortSignal | undefined,
   onStart: (controller: ReadableStreamDefaultController<Uint8Array>) => void,
-  onAbort?: () => void
+  onAbort?: () => void,
 ): ReadableStream<Uint8Array> {
   return new ReadableStream<Uint8Array>({
     start(controller) {
@@ -176,7 +165,7 @@ export function makeStream(
         // If already aborted – trigger immediately
         if (abortSignal.aborted) {
           controller.error(
-            abortSignal.reason ?? new Error("Operation aborted")
+            abortSignal.reason ?? new Error("Operation aborted"),
           );
           onAbort?.();
           return;
@@ -187,11 +176,11 @@ export function makeStream(
           "abort",
           () => {
             controller.error(
-              abortSignal.reason ?? new Error("Operation aborted")
+              abortSignal.reason ?? new Error("Operation aborted"),
             );
             onAbort?.();
           },
-          { once: true }
+          { once: true },
         );
       }
     },

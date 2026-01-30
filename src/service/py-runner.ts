@@ -1,5 +1,5 @@
 import type { PyodideInterface } from "pyodide";
-import { getPyodide, getPip, loadDeps, makeStream } from "../tool/py.ts";
+import { getPip, getPyodide, loadDeps, makeStream } from "../tool/py.ts";
 
 // const EXEC_TIMEOUT = 1000;
 const EXEC_TIMEOUT = 1000 * 60 * 3; // 3 minutes for heavy imports like pandas
@@ -33,16 +33,16 @@ export interface RunPyOptions {
 export async function runPy(
   code: string,
   options?: RunPyOptions,
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
 ): Promise<ReadableStream<Uint8Array>>;
 export async function runPy(
   code: string,
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
 ): Promise<ReadableStream<Uint8Array>>;
 export async function runPy(
   code: string,
   optionsOrAbortSignal?: RunPyOptions | AbortSignal,
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
 ): Promise<ReadableStream<Uint8Array>> {
   // Handle overloaded parameters
   let options: RunPyOptions | undefined;
@@ -67,7 +67,7 @@ export async function runPy(
 
   // Interrupt buffer to be set when aborting
   const interruptBuffer = new Int32Array(
-    new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT)
+    new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT),
   );
 
   pyodide.setInterruptBuffer(interruptBuffer);
@@ -75,32 +75,30 @@ export async function runPy(
   let controller!: ReadableStreamDefaultController<Uint8Array>;
   let streamClosed = false;
 
-  const push =
-    (prefix: string) =>
-    (data: string): void => {
-      try {
-        if (!streamClosed && data) {
-          // Split large output into smaller chunks to avoid buffer overflow
-          const maxChunkSize = 8192; // 8KB chunks
-          if (data.length > maxChunkSize) {
-            // Split the data into smaller chunks
-            for (let i = 0; i < data.length; i += maxChunkSize) {
-              const chunk = data.slice(i, i + maxChunkSize);
-              controller.enqueue(encoder.encode(prefix + chunk));
-              prefix = ""; // Only add prefix to the first chunk
-            }
-          } else {
-            controller.enqueue(encoder.encode(prefix + data));
+  const push = (prefix: string) => (data: string): void => {
+    try {
+      if (!streamClosed && data) {
+        // Split large output into smaller chunks to avoid buffer overflow
+        const maxChunkSize = 8192; // 8KB chunks
+        if (data.length > maxChunkSize) {
+          // Split the data into smaller chunks
+          for (let i = 0; i < data.length; i += maxChunkSize) {
+            const chunk = data.slice(i, i + maxChunkSize);
+            controller.enqueue(encoder.encode(prefix + chunk));
+            prefix = ""; // Only add prefix to the first chunk
           }
+        } else {
+          controller.enqueue(encoder.encode(prefix + data));
         }
-      } catch (err) {
-        // Stream is already closed or errored, ignore
-        console.warn(
-          "[py] Stream already closed, ignoring output:",
-          err instanceof Error ? err.message : String(err)
-        );
       }
-    };
+    } catch (err) {
+      // Stream is already closed or errored, ignore
+      console.warn(
+        "[py] Stream already closed, ignoring output:",
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+  };
 
   // Build the stream with proper abort behaviour
   const stream = makeStream(
@@ -120,7 +118,7 @@ export async function runPy(
           } catch (err) {
             console.warn(
               "[py] Error closing stream on timeout:",
-              err instanceof Error ? err.message : String(err)
+              err instanceof Error ? err.message : String(err),
             );
           }
         }
@@ -128,33 +126,33 @@ export async function runPy(
       }, EXEC_TIMEOUT);
 
       controller = ctrl;
-      
+
       // Use non-batched output to avoid buffer overflow issues
       // This sends output immediately instead of batching it
-      pyodide.setStdout({ 
+      pyodide.setStdout({
         batched: (data: string) => {
           // Process output in smaller chunks to prevent OSError
-          const lines = data.split('\n');
+          const lines = data.split("\n");
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             if (line || i < lines.length - 1) { // Include empty lines except the last one
-              push("")(line + (i < lines.length - 1 ? '\n' : ''));
+              push("")(line + (i < lines.length - 1 ? "\n" : ""));
             }
           }
-        }
+        },
       });
-      
-      pyodide.setStderr({ 
+
+      pyodide.setStderr({
         batched: (data: string) => {
           // Process stderr output in smaller chunks too
-          const lines = data.split('\n');
+          const lines = data.split("\n");
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             if (line || i < lines.length - 1) {
-              push("[stderr] ")(line + (i < lines.length - 1 ? '\n' : ''));
+              push("[stderr] ")(line + (i < lines.length - 1 ? "\n" : ""));
             }
           }
-        }
+        },
       });
 
       // Defer execution so that `start()` returns immediately
@@ -190,7 +188,7 @@ export async function runPy(
       // Clear handlers to prevent further writes
       pyodide.setStdout({});
       pyodide.setStderr({});
-    }
+    },
   );
 
   return stream;
@@ -201,7 +199,7 @@ export async function runPy(
  */
 function setupPyodideFileSystem(
   pyodide: PyodideInterface,
-  options: RunPyOptions
+  options: RunPyOptions,
 ) {
   // Mount Node.js file system if requested
   if (options.nodeFSRoot) {
@@ -211,9 +209,11 @@ function setupPyodideFileSystem(
       pyodide.FS.mount(
         pyodide.FS.filesystems.NODEFS,
         { root: options.nodeFSRoot },
-        mountPoint
+        mountPoint,
       );
-      console.log(`[py] Mounted Node.js FS from ${options.nodeFSRoot} to ${mountPoint}`);
+      console.log(
+        `[py] Mounted Node.js FS from ${options.nodeFSRoot} to ${mountPoint}`,
+      );
     } catch (err) {
       console.warn(`[py] Failed to mount Node.js FS:`, err);
     }

@@ -9,7 +9,7 @@ Deno.test({
     assertEquals(typeof runJS, "function");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -19,7 +19,7 @@ Deno.test({
     assertEquals(typeof runPy, "function");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -32,5 +32,5 @@ Deno.test({
     assertEquals(typeof tools.makeStream, "function");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });

@@ -17,6 +17,7 @@
     "npm:ajv@^8.17.1": "8.17.1",
     "npm:cheerio@1": "1.1.2",
     "npm:dayjs@^1.11.13": "1.11.13",
+    "npm:deno@^2.5.6": "2.5.6",
     "npm:json-schema-faker@~0.5.9": "0.5.9",
     "npm:json-schema-to-zod@^2.6.1": "2.6.1",
     "npm:json-schema-traverse@1": "1.0.0",
@@ -120,6 +121,36 @@
         "openapi3-ts",
         "zod"
       ]
+    },
+    "@deno/darwin-arm64@2.5.6": {
+      "integrity": "sha512-aQoAQSQdA8PVhS9ibx/vl1xtP0ngiZCD2tW/PqUd13fmwM12m3O2V8/oyMTzqXZtT/PnoiOtcqtujbF/yRUyVg==",
+      "os": ["darwin"],
+      "cpu": ["arm64"]
+    },
+    "@deno/darwin-x64@2.5.6": {
+      "integrity": "sha512-9GrCi8ga5mgYB1b/8Pj9vRF4VVNLTuzyVd6bL0vEKFBZ/w27cQj0oY2o60t8AUTpW8iXpJfXMDoY7j4yiK1Xug==",
+      "os": ["darwin"],
+      "cpu": ["x64"]
+    },
+    "@deno/linux-arm64-glibc@2.5.6": {
+      "integrity": "sha512-HiAHeFBmNRsJFulNMQ2LX3k+IvAIhGAo9JcW/0PwrNa3WbMql9wq37pOPp8DkW2VUTvghh3FZm6GUcryUml4bQ==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@deno/linux-x64-glibc@2.5.6": {
+      "integrity": "sha512-aYct9Vp1RgKR2yW9hyWGTIL0EN0MgqaBuD0fbnQHygd4ftSfd/aWcBB3+n7OTUX/YNWSxYkOMLV1N8RWUCj4jw==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@deno/win32-arm64@2.5.6": {
+      "integrity": "sha512-HZq7gShjAehx1d2qg2cHRJJbxpbBk8kVmoPiZpILnN66XRwbNlWtrAUwsXNyHuBHcaT+7LgPTRUzX3KuDYXbwg==",
+      "os": ["win32"],
+      "cpu": ["arm64"]
+    },
+    "@deno/win32-x64@2.5.6": {
+      "integrity": "sha512-GRBl8+CQbNeTp9CrxbCuAuqxi592NZfac1AvDgFEPt8O9aZe/2k+y7AQwESJGxEvyJl1vw6UV24qdf9N7pCM9Q==",
+      "os": ["win32"],
+      "cpu": ["x64"]
     },
     "@hono/zod-openapi@0.19.10_hono@4.8.9_zod@3.25.76": {
       "integrity": "sha512-dpoS6DenvoJyvxtQ7Kd633FRZ/Qf74+4+o9s+zZI8pEqnbjdF/DtxIib08WDpCaWabMEJOL5TXpMgNEZvb7hpA==",
@@ -356,6 +387,19 @@
         "ms"
       ]
     },
+    "deno@2.5.6": {
+      "integrity": "sha512-SSe2gCf41A/uln54H7xdKZFtiDt+reBxYM4IaJLRH/NpEIE5T3VOcLSLHPaJzyiTvZe2xMz1QFcpg4cco5rNsA==",
+      "optionalDependencies": [
+        "@deno/darwin-arm64",
+        "@deno/darwin-x64",
+        "@deno/linux-arm64-glibc",
+        "@deno/linux-x64-glibc",
+        "@deno/win32-arm64",
+        "@deno/win32-x64"
+      ],
+      "scripts": true,
+      "bin": true
+    },
     "depd@2.0.0": {
       "integrity": "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw=="
     },
@@ -481,7 +525,7 @@
         "router",
         "send",
         "serve-static",
-        "statuses@2.0.2",
+        "statuses",
         "type-is",
         "vary"
       ]
@@ -503,7 +547,7 @@
         "escape-html",
         "on-finished",
         "parseurl",
-        "statuses@2.0.2"
+        "statuses"
       ]
     },
     "format-util@1.0.5": {
@@ -570,7 +614,7 @@
         "depd",
         "inherits",
         "setprototypeof",
-        "statuses@2.0.1",
+        "statuses",
         "toidentifier"
       ]
     },
@@ -825,7 +869,7 @@
         "ms",
         "on-finished",
         "range-parser",
-        "statuses@2.0.2"
+        "statuses"
       ]
     },
     "serve-static@2.2.0": {
@@ -890,9 +934,6 @@
     },
     "statuses@2.0.1": {
       "integrity": "sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ=="
-    },
-    "statuses@2.0.2": {
-      "integrity": "sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw=="
     },
     "swr@2.3.4_react@19.1.0": {
       "integrity": "sha512-bYd2lrhc+VarcpkgWclcUi92wYCpOgMws9Sd1hG1ntAu0NEy+14CbotuFjshBU2kt9rYj9TSmDcybpxpeTU1fg==",
@@ -981,6 +1022,7 @@
       "jsr:@mcpc/core@0.1",
       "npm:@hono/zod-openapi@~0.19.2",
       "npm:@modelcontextprotocol/sdk@^1.8.0",
+      "npm:deno@^2.5.6",
       "npm:json-schema-to-zod@^2.6.1",
       "npm:pyodide@0.28",
       "npm:zod@^3.24.2"

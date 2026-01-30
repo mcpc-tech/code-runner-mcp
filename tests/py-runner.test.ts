@@ -8,11 +8,11 @@ Deno.test({
     const code = `print("Hello, Python World!")`;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Hello, Python World!");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -25,13 +25,13 @@ print("Line 3")
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Line 1");
     assertStringIncludes(output, "Line 2");
     assertStringIncludes(output, "Line 3");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -44,11 +44,11 @@ print(f"Square root of 16 is: {result}")
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Square root of 16 is: 4");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -62,11 +62,11 @@ print("Requests package installed successfully")
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 30000); // Longer timeout for package installation
-    
+
     assertStringIncludes(output, "Requests package installed successfully");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -81,11 +81,11 @@ print(f"Requests module: {requests.__name__}")
 print("Requests auto-installation successful")
     `;
     const stream = await runPy(code);
-    const output = await readStreamWithTimeout(stream, 15000);  // Increased timeout
-    
+    const output = await readStreamWithTimeout(stream, 15000); // Increased timeout
+
     assertStringIncludes(output, "Requests version available: True");
     assertStringIncludes(output, "Requests auto-installation successful");
-  }
+  },
 });
 
 Deno.test({
@@ -112,21 +112,21 @@ model = LinearRegression().fit(X, y)
 print(f"Linear regression coefficient: {model.coef_[0]:.2f}")
 print("Multiple packages installation successful")
     `;
-    
+
     const importToPackageMap = {
-      'sklearn': 'scikit-learn'
+      "sklearn": "scikit-learn",
     };
-    
+
     const stream = await runPy(code, { importToPackageMap });
     const output = await readStreamWithTimeout(stream, 60000); // Longer timeout for multiple packages
-    
+
     assertStringIncludes(output, "DataFrame shape: (5, 2)");
     assertStringIncludes(output, "NumPy array sum: 15");
     assertStringIncludes(output, "Linear regression coefficient: 2.00");
     assertStringIncludes(output, "Multiple packages installation successful");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -142,23 +142,23 @@ print("PIL imported successfully")
 print("BeautifulSoup imported successfully")
 print("Custom import map test successful")
     `;
-    
+
     const importToPackageMap = {
-      'cv2': 'opencv-python',
-      'PIL': 'Pillow',
-      'bs4': 'beautifulsoup4'
+      "cv2": "opencv-python",
+      "PIL": "Pillow",
+      "bs4": "beautifulsoup4",
     };
-    
+
     const stream = await runPy(code, { importToPackageMap });
     const output = await readStreamWithTimeout(stream, 60000);
-    
+
     assertStringIncludes(output, "OpenCV imported successfully");
     assertStringIncludes(output, "PIL imported successfully");
     assertStringIncludes(output, "BeautifulSoup imported successfully");
     assertStringIncludes(output, "Custom import map test successful");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -187,14 +187,14 @@ print("Scientific computing stack test successful")
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 60000);
-    
+
     assertStringIncludes(output, "Mean:");
     assertStringIncludes(output, "Standard deviation:");
     assertStringIncludes(output, "Normality test p-value:");
     assertStringIncludes(output, "Scientific computing stack test successful");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -232,22 +232,22 @@ print(f"Test set size: {len(X_test)}")
 print(f"Model accuracy: {accuracy:.2f}")
 print("Complex sklearn submodules test successful")
     `;
-    
+
     const importToPackageMap = {
-      'sklearn': 'scikit-learn',
-      'pandas': 'pandas'
+      "sklearn": "scikit-learn",
+      "pandas": "pandas",
     };
-    
+
     const stream = await runPy(code, { importToPackageMap });
     const output = await readStreamWithTimeout(stream, 60000);
-    
+
     assertStringIncludes(output, "Training set size:");
     assertStringIncludes(output, "Test set size:");
     assertStringIncludes(output, "Model accuracy:");
     assertStringIncludes(output, "Complex sklearn submodules test successful");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -263,13 +263,13 @@ print("After error handling")
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Before error");
     assertStringIncludes(output, "Caught error: Test error message");
     assertStringIncludes(output, "After error handling");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -282,12 +282,12 @@ print("stderr message", file=sys.stderr)
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "stdout message");
     assertStringIncludes(output, "[stderr] stderr message");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -302,13 +302,13 @@ print(json_str)
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "JSON data:");
     assertStringIncludes(output, '"name": "Alice"');
     assertStringIncludes(output, '"age": 30');
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -322,12 +322,12 @@ print(f"Squares: {squares}")
     `;
     const stream = await runPy(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Original: [1, 2, 3, 4, 5]");
     assertStringIncludes(output, "Squares: [1, 4, 9, 16, 25]");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -339,13 +339,13 @@ print("Starting...")
 time.sleep(10)  # 10 second delay
 print("This should not appear")
     `;
-    
+
     const controller = new AbortController();
     const stream = await runPy(code, controller.signal);
-    
+
     // Abort after a short delay
     setTimeout(() => controller.abort(), 100);
-    
+
     try {
       await readStreamWithTimeout(stream, 1000);
     } catch (error) {
@@ -354,7 +354,7 @@ print("This should not appear")
     }
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 // Temporarily disabled to prevent KeyboardInterrupt errors
@@ -369,10 +369,10 @@ print("This should not appear")
 // print(f"Created string of length: {len(large_string)}")
 // print("Data test completed successfully")
 //     `;
-    
+
 //     const stream = await runPy(code);
 //     const output = await readStreamWithTimeout(stream, 10000);
-    
+
 //     assertStringIncludes(output, "Starting controlled data test...");
 //     assertStringIncludes(output, "Data test completed successfully");
 //     assertStringIncludes(output, "Created string of length: 100");
@@ -406,26 +406,26 @@ print("This should not appear")
 //     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
 //         json.dump(data, f, indent=2)
 //         temp_file = f.name
-    
+
 //     print(f"Data written to temporary file: {os.path.basename(temp_file)}")
-    
+
 //     # Read back a small portion to verify
 //     with open(temp_file, 'r') as f:
 //         first_line = f.readline().strip()
 //         print(f"First line of file: {first_line}")
-    
+
 //     # Clean up
 //     os.unlink(temp_file)
 //     print("Temporary file cleaned up")
 //     print("Chunked file writing test completed successfully")
-    
+
 // except Exception as e:
 //     print(f"Error in file operations: {e}")
 //     `;
-    
+
 //     const stream = await runPy(code);
 //     const output = await readStreamWithTimeout(stream, 10000);
-    
+
 //     assertStringIncludes(output, "Testing chunked file operations...");
 //     assertStringIncludes(output, "Chunked file writing test completed successfully");
 //     assertStringIncludes(output, "Data written to temporary file:");
@@ -434,7 +434,7 @@ print("This should not appear")
 //   sanitizeOps: false
 // });
 
-// Temporarily disabled to prevent KeyboardInterrupt errors  
+// Temporarily disabled to prevent KeyboardInterrupt errors
 // Deno.test({
 //   name: "Python Runner - OSError Buffer Limit Test",
 //   async fn() {
@@ -446,22 +446,22 @@ print("This should not appear")
 // try:
 //     # Create large data but DON'T print it all at once
 //     large_data = "A" * 10000  # 10KB of data
-    
+
 //     # Instead of printing the entire large_data, print summary info
 //     print(f"Created large data buffer: {len(large_data)} characters")
 //     print(f"First 50 chars: {large_data[:50]}...")
 //     print(f"Last 50 chars: ...{large_data[-50:]}")
-    
+
 //     # Test successful chunked output
 //     print("Buffer limit test completed without OSError")
-    
+
 // except Exception as e:
 //     print(f"Unexpected error: {e}")
 //     `;
-    
+
 //     const stream = await runPy(code);
 //     const output = await readStreamWithTimeout(stream, 10000);
-    
+
 //     assertStringIncludes(output, "Testing buffer limit handling...");
 //     assertStringIncludes(output, "Buffer limit test completed without OSError");
 //     assertStringIncludes(output, "Created large data buffer: 10000 characters");

@@ -15,4 +15,4 @@ startCommand:
   commandFunction:
     # A function that produces the CLI command to start the MCP on stdio.
     |-
-    config=>({command:'deno',args:['run', '--allow-all', 'jsr:@mcpc/code-runner-mcp/bin'],env:{DENO_PERMISSION_ARGS:config.deno_permission_args}})
+      config=>({command:'deno',args:['run', '--allow-all', 'jsr:@mcpc/code-runner-mcp/bin'],env:{DENO_PERMISSION_ARGS:config.deno_permission_args}})

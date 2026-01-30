@@ -22,7 +22,7 @@ const encoder = new TextEncoder();
  */
 export function runJS(
   code: string,
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
 ): ReadableStream<Uint8Array> {
   // Launch Deno: `deno run --quiet -` reads the script from stdin
   console.log("[start][js] spawn");
@@ -49,12 +49,12 @@ export function runJS(
         ...process.env,
         DENO_DIR: join(cwd, ".deno"),
       },
-    }
+    },
   );
 
   // Log the actual command being run
   console.log(
-    `[start][js] command: deno run --quiet --allow-read="${cwd}/" --allow-write="${cwd}/" -`
+    `[start][js] command: deno run --quiet --allow-read="${cwd}/" --allow-write="${cwd}/" -`,
   );
 
   // Feed provided code to Deno
@@ -64,10 +64,9 @@ export function runJS(
   const forward =
     (controller: ReadableStreamDefaultController<Uint8Array>, prefix = "") =>
     (chunk: Buffer | string) => {
-      const data =
-        typeof chunk === "string"
-          ? encoder.encode(prefix + chunk)
-          : new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+      const data = typeof chunk === "string"
+        ? encoder.encode(prefix + chunk)
+        : new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
 
       // For stderr add prefix only once at beginning of line
       if (prefix) {
@@ -102,7 +101,7 @@ export function runJS(
     () => {
       // Abort cleanup – kill the subprocess
       proc.kill();
-    }
+    },
   );
 
   return stream;

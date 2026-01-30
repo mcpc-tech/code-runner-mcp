@@ -8,11 +8,11 @@ Deno.test({
     const code = `console.log("Hello, World!");`;
     const stream = runJS(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Hello, World!");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -27,14 +27,14 @@ Deno.test({
       const person: Person = { name: "Alice", age: 30 };
       console.log(\`Name: \${person.name}, Age: \${person.age}\`);
     `;
-    
+
     const stream = runJS(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Name: Alice, Age: 30");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -51,15 +51,15 @@ Deno.test({
       const user = UserSchema.parse({ name: "Bob", age: 25 });
       console.log("User validated:", JSON.stringify(user));
     `;
-    
+
     const stream = runJS(code);
     const output = await readStreamWithTimeout(stream, 15000); // Longer timeout for package download
-    
+
     assertStringIncludes(output, "User validated:");
     assertStringIncludes(output, "Bob");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -71,15 +71,15 @@ Deno.test({
       const fullPath = join("home", "user", "documents");
       console.log("Full path:", fullPath);
     `;
-    
+
     const stream = runJS(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Full path:");
     assertStringIncludes(output, "home");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -90,15 +90,15 @@ Deno.test({
       throw new Error("Test error");
       console.log("After error"); // This should not execute
     `;
-    
+
     const stream = runJS(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Before error");
     assertStringIncludes(output, "Test error");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -108,15 +108,15 @@ Deno.test({
       console.log("stdout message");
       console.error("stderr message");
     `;
-    
+
     const stream = runJS(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "stdout message");
     assertStringIncludes(output, "[stderr] stderr message");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -127,13 +127,13 @@ Deno.test({
       await new Promise(resolve => setTimeout(resolve, 10000)); // 10 second delay
       console.log("This should not appear");
     `;
-    
+
     const controller = new AbortController();
     const stream = runJS(code, controller.signal);
-    
+
     // Abort after a short delay
     setTimeout(() => controller.abort(), 100);
-    
+
     try {
       await readStreamWithTimeout(stream, 1000);
     } catch (error) {
@@ -142,7 +142,7 @@ Deno.test({
     }
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -152,13 +152,13 @@ Deno.test({
       console.log("Testing Node.js modules");
       console.log("typeof process:", typeof process);
     `;
-    
+
     const stream = runJS(code);
     const output = await readStreamWithTimeout(stream, 10000);
-    
+
     assertStringIncludes(output, "Testing Node.js modules");
     assertStringIncludes(output, "typeof process:");
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });

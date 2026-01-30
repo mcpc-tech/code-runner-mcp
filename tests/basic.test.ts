@@ -22,8 +22,8 @@ Deno.test("Test Setup - Stream Creation", () => {
     start(controller) {
       controller.enqueue(new Uint8Array([1, 2, 3]));
       controller.close();
-    }
+    },
   });
-  
+
   assertEquals(stream instanceof ReadableStream, true);
 });

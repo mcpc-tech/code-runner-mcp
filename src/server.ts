@@ -14,5 +14,5 @@ Deno.serve(
     port,
     hostname,
   },
-  app.fetch
+  app.fetch,
 );

@@ -1,29 +1,32 @@
 {
-    "name": "@mcpc/code-runner-mcp",
-    "version": "0.1.0-beta.9",
-    "description": "Run Javascript/Python code in a secure sandbox, with support for importing **any package**! 🚀",
-    "tasks": {
-        "server:watch": "deno -A --watch ./src/server.ts",
-        "server:compile": "echo no need to compile",
-        "test": "deno run --allow-all tests/run-tests.ts",
-        "test:basic": "deno run --allow-all tests/run-basic-tests.ts",
-        "test:watch": "deno run --allow-all tests/run-tests.ts --watch",
-        "test:coverage": "deno run --allow-all tests/run-tests.ts --coverage",
-        "test:js": "deno run --allow-all tests/run-tests.ts --filter 'JavaScript'",
-        "test:py": "deno run --allow-all tests/run-tests.ts --filter 'Python'",
-        "test:integration": "deno run --allow-all tests/run-tests.ts --filter 'Integration'"
-    },
-    "imports": {
-        "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.19.2",
-        "@mcpc/core": "jsr:@mcpc/core@^0.1.0",
-        "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.8.0",
-        "json-schema-to-zod": "npm:json-schema-to-zod@^2.6.1",
-        "pyodide": "npm:pyodide@^0.28.0",
-        "zod": "npm:zod@^3.24.2"
-    },
-    "exports": {
-        ".": "./mod.ts",
-        "./server": "./src/server.ts",
-        "./bin": "./src/stdio.server.ts"
-    }
+  "name": "@mcpc/code-runner-mcp",
+  "version": "0.1.0-beta.9",
+  "nodeModulesDir": "auto",
+  "description": "Run Javascript/Python code in a secure sandbox, with support for importing **any package**! 🚀",
+  "tasks": {
+    "server:watch": "deno -A --watch ./src/server.ts",
+    "server:compile": "echo no need to compile",
+    "test": "deno run --allow-all tests/run-tests.ts",
+    "test:basic": "deno run --allow-all tests/run-basic-tests.ts",
+    "test:watch": "deno run --allow-all tests/run-tests.ts --watch",
+    "test:coverage": "deno run --allow-all tests/run-tests.ts --coverage",
+    "test:js": "deno run --allow-all tests/run-tests.ts --filter 'JavaScript'",
+    "test:py": "deno run --allow-all tests/run-tests.ts --filter 'Python'",
+    "test:integration": "deno run --allow-all tests/run-tests.ts --filter 'Integration'"
+  },
+  "imports": {
+    "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.19.2",
+    "@mcpc/core": "jsr:@mcpc/core@^0.1.0",
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.8.0",
+    "deno": "npm:deno@^2.5.6",
+    "json-schema-to-zod": "npm:json-schema-to-zod@^2.6.1",
+    "pyodide": "npm:pyodide@^0.28.0",
+    "zod": "npm:zod@^3.24.2"
+  },
+  "exports": {
+    ".": "./mod.ts",
+    "./server": "./src/server.ts",
+    "./bin": "./src/stdio.server.ts"
+  },
+  "allowScripts": ["npm:deno@2.5.6"]
 }

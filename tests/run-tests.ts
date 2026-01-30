@@ -12,16 +12,16 @@ const args = parseArgs(Deno.args, {
   string: ["filter", "reporter"],
   alias: {
     h: "help",
-    w: "watch", 
+    w: "watch",
     c: "coverage",
     f: "filter",
     r: "reporter",
-    p: "parallel"
+    p: "parallel",
   },
   default: {
     reporter: "pretty",
-    parallel: true
-  }
+    parallel: true,
+  },
 });
 
 if (args.help) {
@@ -85,7 +85,7 @@ console.log("=".repeat(50));
 const process = new Deno.Command(testCommand[0], {
   args: testCommand.slice(1),
   stdout: "inherit",
-  stderr: "inherit"
+  stderr: "inherit",
 });
 
 const { code } = await process.output();
@@ -93,13 +93,13 @@ const { code } = await process.output();
 if (args.coverage && code === 0) {
   console.log("\n" + "=".repeat(50));
   console.log("Generating coverage report...");
-  
+
   const coverageProcess = new Deno.Command("deno", {
     args: ["coverage", "--html"],
-    stdout: "inherit", 
-    stderr: "inherit"
+    stdout: "inherit",
+    stderr: "inherit",
   });
-  
+
   await coverageProcess.output();
 }
 

@@ -8,12 +8,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // This helps avoid timing issues with async Pyodide initialization
 async function ensurePyodideReady() {
   // Wait for any pending microtasks to execute (includes queueMicrotask from py-runner)
-  await new Promise(resolve => setTimeout(resolve, 10));
-  
+  await new Promise((resolve) => setTimeout(resolve, 10));
+
   try {
     await getPyodide();
     // Also wait a bit more to ensure all initialization is complete
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
   } catch {
     // Ignore errors, we just want to wait for initialization to complete
   }
@@ -23,35 +23,35 @@ Deno.test({
   name: "MCP Server Setup - Basic Initialization",
   async fn() {
     await ensurePyodideReady();
-    
+
     const server = setUpMcpServer(
       { name: "test-server", version: "0.1.0" },
-      { capabilities: { tools: {} } }
+      { capabilities: { tools: {} } },
     );
-    
+
     assertExists(server);
     assertEquals(server instanceof McpServer, true);
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
   name: "MCP Server Setup - Tools Registration",
   async fn() {
     await ensurePyodideReady();
-    
+
     const server = setUpMcpServer(
       { name: "test-server", version: "0.1.0" },
-      { capabilities: { tools: {} } }
+      { capabilities: { tools: {} } },
     );
-    
+
     // The server should have tools registered
     // We can't directly access the tools, but we can verify the server exists
     assertExists(server);
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -59,21 +59,21 @@ Deno.test({
   async fn() {
     await withEnv({
       "NODEFS_ROOT": "/tmp/test",
-      "NODEFS_MOUNT_POINT": "/mnt/test", 
-      "DENO_PERMISSION_ARGS": "--allow-net --allow-env"
+      "NODEFS_MOUNT_POINT": "/mnt/test",
+      "DENO_PERMISSION_ARGS": "--allow-net --allow-env",
     }, async () => {
       await ensurePyodideReady();
-      
+
       const server = setUpMcpServer(
         { name: "test-server", version: "0.1.0" },
-        { capabilities: { tools: {} } }
+        { capabilities: { tools: {} } },
       );
-      
+
       assertExists(server);
     });
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
 
 Deno.test({
@@ -82,15 +82,15 @@ Deno.test({
     // Test with minimal environment (should still work)
     await withEnv({}, async () => {
       await ensurePyodideReady();
-      
+
       const server = setUpMcpServer(
         { name: "test-server", version: "0.1.0" },
-        { capabilities: { tools: {} } }
+        { capabilities: { tools: {} } },
       );
-      
+
       assertExists(server);
     });
   },
   sanitizeResources: false,
-  sanitizeOps: false
+  sanitizeOps: false,
 });
