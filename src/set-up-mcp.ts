@@ -37,19 +37,10 @@ ${
 
 ## Parameters
 
-**code** (required): Python code. MUST use \`print()\` to see results.
+**code** (required): Python code. MUST use \`print()\` to see results. **Tip:** Use single quotes and avoid f-strings/backticks to prevent JSON escaping issues.
 
-**importToPackageMap** (optional): Map import names → PyPI package names. Only needed when they differ.
-
-**Needs mapping:** sklearn→scikit-learn, PIL→Pillow, cv2→opencv-python, skimage→scikit-image, docx→python-docx
-
-**No mapping needed:** numpy, pandas, requests, matplotlib, openpyxl, PyPDF2, pdfplumber
-
-**Missing dependencies:** If you get \`ModuleNotFoundError\`, install the package manually at the beginning of your code:
-\`\`\`python
-import micropip
-await micropip.install('package-name')
-\`\`\`
+**packages** (optional): Map import names to PyPI package names. Use when names differ (e.g., sklearn→scikit-learn) or for indirectly imported packages (e.g., openpyxl for pandas).
+Example: {"sklearn": "scikit-learn", "openpyxl": "openpyxl"}
 
 ## File System
 ${
@@ -80,7 +71,6 @@ Use \`importToPackageMap: {"sklearn": "scikit-learn"}\`
 | Error | Fix |
 |-------|-----|
 | \`(no output)\` | Add \`print()\` statements |
-| \`ModuleNotFoundError\` | Add importToPackageMap |
 | \`Permission denied\` | ${
       nodeFSMountPoint || nodeFSRoot
         ? `Use \`${nodeFSMountPoint || nodeFSRoot}\` path only`
@@ -91,24 +81,22 @@ Use \`importToPackageMap: {"sklearn": "scikit-learn"}\`
       code: z.string().describe(
         "Python code to execute. MUST use print() to see results.",
       ),
-      importToPackageMap: z
+      packages: z
         .record(z.string(), z.string())
         .optional()
         .describe(
-          "Map import names to PyPI package names when they differ. " +
-            "Required: sklearn→scikit-learn, PIL→Pillow, cv2→opencv-python, skimage→scikit-image, docx→python-docx. " +
-            "Not needed: numpy, pandas, requests, matplotlib, openpyxl, PyPDF2, pdfplumber",
+          'Map import names to PyPI package names. Use when names differ or for indirectly imported packages. Example: {"sklearn": "scikit-learn", "openpyxl": "openpyxl"}',
         ),
     }).shape,
-    async ({ code, importToPackageMap }, extra) => {
+    async ({ code, packages }, extra) => {
       const options = nodeFSRoot
         ? {
           nodeFSRoot,
           ...(nodeFSMountPoint && { nodeFSMountPoint }),
-          ...(importToPackageMap && { importToPackageMap }),
+          ...(packages && { packages }),
         }
-        : importToPackageMap
-        ? { importToPackageMap }
+        : packages
+        ? { packages }
         : undefined;
 
       const stream = await runPy(code, options, extra.signal);

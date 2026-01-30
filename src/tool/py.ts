@@ -104,12 +104,27 @@ result`;
     const imports = pyodide.runPython(analysisCode).toJs();
 
     const pip = await getPip();
-    if (imports && imports.length > 0) {
-      // Map import names to package names
-      const packagesToInstall = imports.map((imp: string) =>
-        imp in combinedMap ? combinedMap[imp] : imp
-      );
 
+    // Collect packages to install:
+    // 1. Auto-detected imports mapped to package names
+    // 2. Explicitly declared packages from importToPackageMap values
+    const packagesToInstall: string[] = [];
+
+    // Add auto-detected imports
+    if (imports && imports.length > 0) {
+      for (const imp of imports) {
+        packagesToInstall.push(imp in combinedMap ? combinedMap[imp] : imp);
+      }
+    }
+
+    // Add explicitly declared packages (values from importToPackageMap)
+    for (const pkg of Object.values(importToPackageMap)) {
+      if (!packagesToInstall.includes(pkg)) {
+        packagesToInstall.push(pkg);
+      }
+    }
+
+    if (packagesToInstall.length > 0) {
       // Try batch installation first for better performance
       try {
         await pip.install(packagesToInstall);

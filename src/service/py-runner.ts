@@ -21,7 +21,7 @@ export interface RunPyOptions {
   /** Virtual directory path in Pyodide's file system to mount to (defaults to nodeFSRoot if not specified) */
   nodeFSMountPoint?: string;
   /** Custom mapping from import names to package names for micropip installation */
-  importToPackageMap?: Record<string, string>;
+  packages?: Record<string, string>;
 }
 
 /**
@@ -63,7 +63,7 @@ export async function runPy(
   }
 
   // Load packages
-  await loadDeps(code, options?.importToPackageMap);
+  await loadDeps(code, options?.packages);
 
   // Interrupt buffer to be set when aborting
   const interruptBuffer = new Int32Array(
@@ -161,6 +161,26 @@ export async function runPy(
           // If an abort happened before execution – don't run
           if (signal?.aborted) return;
 
+          // Pre-validate Python code to catch syntax errors early
+          try {
+            pyodide.runPython(
+              `compile(${JSON.stringify(code)}, '<string>', 'exec')`,
+            );
+          } catch (compileErr) {
+            const errMsg = compileErr instanceof Error
+              ? compileErr.message
+              : String(compileErr);
+            if (
+              errMsg.includes("unterminated string literal") ||
+              errMsg.includes("SyntaxError")
+            ) {
+              const enhancedMsg =
+                `${errMsg}\n\n**Syntax Error Detected!** This often happens when Python code is not properly escaped for JSON transmission.\n\n**Tips:**\n- Avoid using triple quotes (\`\`\` or \`\`\`python)\n- Use single quotes for strings: \`'hello'\` instead of \`"hello"\`\n- For multi-line strings, concatenate: \`'line1' + '\\n' + 'line2'\`\n- Avoid backticks (\`) and dollar signs (\$) in code`;
+              throw new Error(enhancedMsg);
+            }
+            throw compileErr;
+          }
+
           await pyodide.runPythonAsync(code);
           clearTimeout(timeout);
           if (!streamClosed) {
@@ -173,7 +193,23 @@ export async function runPy(
         } catch (err) {
           clearTimeout(timeout);
           if (!streamClosed) {
-            controller.error(err);
+            const errMsg = err instanceof Error ? err.message : String(err);
+
+            // Detect ModuleNotFoundError and append helpful hint
+            if (
+              errMsg.includes("ModuleNotFoundError") ||
+              errMsg.includes("No module named")
+            ) {
+              // Extract package name from error message
+              const match = errMsg.match(/No module named ['"]([^'"]+)['"]/);
+              const pkgName = match ? match[1] : "package-name";
+
+              const enhancedMsg =
+                `${errMsg}\n\n**Missing dependency detected!** To install it, add this at the beginning of your code:\n\`\`\`python\nimport micropip\nawait micropip.install('${pkgName}')\n\`\`\``;
+              controller.error(new Error(enhancedMsg));
+            } else {
+              controller.error(err);
+            }
             streamClosed = true;
             // Clear handlers to prevent further writes
             pyodide.setStdout({});
