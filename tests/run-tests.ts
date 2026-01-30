@@ -5,7 +5,7 @@
  * This script runs all tests in the tests/ directory
  */
 
-import { parseArgs } from "jsr:@std/cli/parse-args";
+import { parseArgs } from "@std/cli/parse-args";
 
 const args = parseArgs(Deno.args, {
   boolean: ["help", "watch", "coverage", "parallel"],

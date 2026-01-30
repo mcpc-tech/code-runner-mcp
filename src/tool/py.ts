@@ -7,6 +7,7 @@ import process from "node:process";
 
 let pyodideInstance: Promise<PyodideInterface> | null = null;
 
+// deno-lint-ignore require-await
 export const getPyodide = async (): Promise<PyodideInterface> => {
   if (!pyodideInstance) {
     // Support custom package download source (e.g., using private mirror)
