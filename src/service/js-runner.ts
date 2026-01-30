@@ -3,11 +3,12 @@ import { makeStream } from "../tool/py.ts";
 import type { Buffer } from "node:buffer";
 import path, { join } from "node:path";
 import { mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import process from "node:process";
 import { tmpdir } from "node:os";
 
 const projectRoot = tmpdir();
-const cwd = path.join(projectRoot, ".deno_runner_tmp");
+export const cwd = path.join(projectRoot, ".deno_runner_tmp");
 
 mkdirSync(cwd, { recursive: true });
 
@@ -17,7 +18,24 @@ const EXEC_TIMEOUT = 1000 * 60 * 1;
 const encoder = new TextEncoder();
 
 /**
- * Run arbitrary JavaScript using Deno (must be in PATH) and **stream**
+ * Get Deno binary path from npm package
+ */
+function getDenoBinaryPath(): string {
+  // @ts-ignore import.meta.resolve might not be available in all environments
+  const resolver = import.meta.resolve;
+  if (!resolver) {
+    throw new Error(
+      "Cannot resolve deno package: import.meta.resolve not available",
+    );
+  }
+
+  const pkgUrl = resolver("deno/package.json");
+  const denoDir = path.dirname(fileURLToPath(pkgUrl));
+  return path.join(denoDir, "bin.cjs");
+}
+
+/**
+ * Run arbitrary JavaScript using Deno and **stream**
  * its stdout / stderr.
  */
 export function runJS(
@@ -32,8 +50,9 @@ export function runJS(
 
   // Note: --allow-* cannot be used with '--allow-all'
   const allowAll = userProvidedPermissions.includes("--allow-all");
+  const denoBinary = getDenoBinaryPath();
   const proc = spawn(
-    "deno",
+    denoBinary,
     [
       "run",
       `--quiet`,
@@ -54,7 +73,7 @@ export function runJS(
 
   // Log the actual command being run
   console.log(
-    `[start][js] command: deno run --quiet --allow-read="${cwd}/" --allow-write="${cwd}/" -`,
+    `[start][js] command: ${denoBinary} run --quiet --allow-read="${cwd}/" --allow-write="${cwd}/" -`,
   );
 
   // Feed provided code to Deno
@@ -62,6 +81,7 @@ export function runJS(
   proc.stdin.end();
 
   let streamClosed = false;
+  let errorBuffer = "";
 
   const forward =
     (controller: ReadableStreamDefaultController<Uint8Array>, prefix = "") =>
@@ -69,6 +89,19 @@ export function runJS(
       if (streamClosed) return;
 
       try {
+        const text = typeof chunk === "string" ? chunk : chunk.toString();
+
+        // Detect permission errors and append helpful hint
+        if (prefix === "[stderr] " && text.includes("Permission denied")) {
+          if (!errorBuffer.includes("PermissionHintShown")) {
+            errorBuffer += "PermissionHintShown";
+            const enhancedMsg =
+              `[stderr] ${text}\n\n**Permission denied!** The Deno runtime restricts file system access.\n\n**Fix:** Use \`${cwd}/\` path only for file operations.`;
+            controller.enqueue(encoder.encode(enhancedMsg));
+            return;
+          }
+        }
+
         // For stderr add prefix only once at beginning of line
         if (prefix) {
           controller.enqueue(encoder.encode(prefix));

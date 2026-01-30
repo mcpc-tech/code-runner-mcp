@@ -19,7 +19,7 @@
     "@mcpc/core": "jsr:@mcpc/core@^0.1.0",
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.8.0",
     "@std/cli": "jsr:@std/cli@^1.0.0",
-    "deno": "npm:deno@^2.5.6",
+    "deno": "npm:deno@^2.6.7",
     "json-schema-to-zod": "npm:json-schema-to-zod@^2.6.1",
     "pyodide": "npm:pyodide@^0.28.0",
     "zod": "npm:zod@^3.24.2"
