@@ -22,6 +22,9 @@ export interface RunPyOptions {
   nodeFSMountPoint?: string;
   /** Custom mapping from import names to package names for micropip installation */
   packages?: Record<string, string>;
+  /** Custom JavaScript handlers to inject into Python environment */
+  // deno-lint-ignore no-explicit-any
+  handlers?: Record<string, (...args: any[]) => unknown>;
 }
 
 /**
@@ -60,6 +63,29 @@ export async function runPy(
   // Set up file system if options provided
   if (options) {
     setupPyodideFileSystem(pyodide, options);
+  }
+
+  // Inject custom handlers into Python environment
+  if (options?.handlers) {
+    for (const [name, fn] of Object.entries(options.handlers)) {
+      // Wrap handler to handle async functions and convert return values
+      // deno-lint-ignore no-explicit-any
+      const wrappedFn = (...args: any[]) => {
+        // Convert Python proxies to JS values before passing to handler
+        const convertedArgs = args.map((arg) => {
+          if (arg && typeof arg === "object" && arg.toJs) {
+            // Convert PyProxy to JS object
+            return arg.toJs({ dict_converter: Object.fromEntries });
+          }
+          return arg;
+        });
+
+        const result = fn(...convertedArgs);
+        return result;
+      };
+
+      pyodide.globals.set(name, wrappedFn);
+    }
   }
 
   // Load packages

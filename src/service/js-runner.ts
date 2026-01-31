@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 import process from "node:process";
 import { tmpdir } from "node:os";
 
-const projectRoot = tmpdir();
-export const cwd = path.join(projectRoot, ".deno_runner_tmp");
+const projectRoot: string = tmpdir();
+export const cwd: string = path.join(projectRoot, ".deno_runner_tmp");
 
 mkdirSync(cwd, { recursive: true });
 
