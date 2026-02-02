@@ -1,7 +1,7 @@
 # Code Runner MCP
 
-[![smithery badge](https://smithery.ai/badge/@mcpc-tech/mcpc)](https://smithery.ai/server/@mcpc-tech/mcpc)
 [![JSR](https://jsr.io/badges/@mcpc/code-runner-mcp)](https://jsr.io/@mcpc/code-runner-mcp)
+[![npm](https://img.shields.io/npm/v/@mcpc-tech/code-runner-mcp)](https://www.npmjs.com/package/@mcpc-tech/code-runner-mcp)
 
 🚀 **Let AI execute JavaScript/Python code with any package imports!**
 
@@ -16,8 +16,23 @@
 - **⚡ Quick Validation**: Test if packages meet your needs without local
   installation
 
-> 🌐 Try it online:
-> [smithery.ai](https://smithery.ai/server/@mcpc-tech/mcpc/tools)
+## 📦 Installation
+
+### JSR (Recommended)
+
+```bash
+deno add jsr:@mcpc/code-runner-mcp
+```
+
+Package: `@mcpc/code-runner-mcp`
+
+### npm
+
+```bash
+npm install @mcpc-tech/code-runner-mcp
+```
+
+Package: `@mcpc-tech/code-runner-mcp`
 
 ## 🚀 Quick Start
 
@@ -47,14 +62,9 @@
   "mcpServers": {
     "code-runner": {
       "command": "npx",
-      "args": [
-        "-y",
-        "deno",
-        "run",
-        "--allow-all",
-        "jsr:@mcpc/code-runner-mcp/bin"
-      ],
+      "args": ["-y", "@mcpc-tech/code-runner-mcp"],
       "env": {
+        "NODE_OPTIONS": "--experimental-wasm-stack-switching",
         "DENO_PERMISSION_ARGS": "--allow-net",
         "NODEFS_ROOT": "/tmp",
         "NODEFS_MOUNT_POINT": "/tmp"
@@ -64,6 +74,9 @@
   }
 }
 ```
+
+> **Note**: `NODE_OPTIONS=--experimental-wasm-stack-switching` is required for
+> Pyodide (WebAssembly Python runtime) to work properly in Node.js.
 
 ## 💡 Use Cases
 
