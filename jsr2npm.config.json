@@ -7,7 +7,10 @@
         "code-runner-mcp": "./src/stdio.server.ts"
       },
       "packageJson": {
-        "name": "@mcpc-tech/code-runner-mcp"
+        "name": "@mcpc-tech/code-runner-mcp",
+        "dependencies": {
+          "deno": "^2.6.7"
+        }
       }
     }
   ]
