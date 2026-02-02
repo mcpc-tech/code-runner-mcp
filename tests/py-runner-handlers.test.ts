@@ -28,9 +28,10 @@ Deno.test({
   async fn() {
     const code = `
 result = get_user()
-print(f"Name: {result.name}")
-print(f"Age: {result.age}")
-print(f"Tags: {result.tags}")
+print(f"Name: {result['name']}")
+print(f"Age: {result['age']}")
+print(f"Tags: {result['tags']}")
+print(f"Type: {type(result).__name__}")
     `;
 
     const stream = await runPy(code, {
@@ -47,6 +48,8 @@ print(f"Tags: {result.tags}")
     assertStringIncludes(output, "Name: Alice");
     assertStringIncludes(output, "Age: 30");
     assertStringIncludes(output, "Tags:");
+    // Returns standard Python dict - use ['key'] syntax
+    assertStringIncludes(output, "Type: dict");
   },
   sanitizeResources: false,
   sanitizeOps: false,
@@ -135,9 +138,9 @@ import asyncio
 
 async def main():
     result = await async_get_user(123)
-    print(f"Name: {result.name}")
-    print(f"Email: {result.email}")
-    print(f"Active: {result.active}")
+    print(f"Name: {result['name']}")
+    print(f"Email: {result['email']}")
+    print(f"Active: {result['active']}")
     print(f"Type: {type(result).__name__}")
 
 asyncio.run(main())
@@ -161,6 +164,8 @@ asyncio.run(main())
     assertStringIncludes(output, "Name: Bob");
     assertStringIncludes(output, "Email: bob@example.com");
     assertStringIncludes(output, "Active: True");
+    // Returns standard Python dict - use ['key'] syntax
+    assertStringIncludes(output, "Type: dict");
   },
   sanitizeResources: false,
   sanitizeOps: false,
@@ -255,24 +260,17 @@ asyncio.run(main())
 });
 
 Deno.test({
-  name: "Handlers - Promise then/callback",
+  name: "Handlers - Async handler with await",
   async fn() {
     const code = `
-# Method 3: Using then/callback (sync style)
-results = []
+# Use await with async handler (Python style)
+import asyncio
 
-def handle_result(data):
-    results.append(data)
-    print(f"Callback received: {data}")
+async def main():
+    result = await async_compute(5)
+    print(f"Result: {result}")
 
-future = async_compute(5)
-future.then(handle_result)
-
-# Wait for callback execution
-import time
-time.sleep(0.1)
-
-print(f"Results: {results}")
+asyncio.run(main())
     `;
 
     const stream = await runPy(code, {
@@ -285,7 +283,7 @@ print(f"Results: {results}")
     });
 
     const output = await readStreamWithTimeout(stream, 10000);
-    assertStringIncludes(output, "Callback received: 10");
+    assertStringIncludes(output, "Result: 10");
   },
   sanitizeResources: false,
   sanitizeOps: false,
@@ -324,6 +322,79 @@ asyncio.run(main())
     assertStringIncludes(output, "Task-A");
     assertStringIncludes(output, "Task-B");
     assertStringIncludes(output, "Task-C");
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+Deno.test({
+  name: "Handlers - Return dict subscriptable with bracket notation",
+  async fn() {
+    const code = `
+import asyncio
+
+async def main():
+    result = await get_data()
+    # Test bracket notation (requires to_py conversion)
+    success = result['data']['success']
+    rate = result['data']['growth_rate']
+    print(f"Success: {success}")
+    print(f"Growth Rate: {rate}%")
+    print(f"Type of result: {type(result).__name__}")
+
+asyncio.run(main())
+    `;
+
+    const stream = await runPy(code, {
+      handlers: {
+        get_data: async () => ({
+          data: {
+            success: true,
+            growth_rate: 111.1,
+            reason: "Business is growing",
+          },
+          text: "Analysis report",
+        }),
+      },
+    });
+
+    const output = await readStreamWithTimeout(stream, 10000);
+    assertStringIncludes(output, "Success: True");
+    assertStringIncludes(output, "Growth Rate: 111.1%");
+    // Returns standard Python dict - use ['key'] syntax
+    assertStringIncludes(output, "Type of result: dict");
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+Deno.test({
+  name: "Handlers - Return nested dict accessible with brackets",
+  async fn() {
+    const code = `
+# Test sync handler returning nested dict
+result = get_nested()
+print(f"Level1: {result['level1']}")
+print(f"Level2: {result['level1']['level2']}")
+print(f"Value: {result['level1']['level2']['value']}")
+    `;
+
+    const stream = await runPy(code, {
+      handlers: {
+        get_nested: () => ({
+          level1: {
+            level2: {
+              value: 42,
+            },
+          },
+        }),
+      },
+    });
+
+    const output = await readStreamWithTimeout(stream, 10000);
+    assertStringIncludes(output, "Level1:");
+    assertStringIncludes(output, "Level2:");
+    assertStringIncludes(output, "Value: 42");
   },
   sanitizeResources: false,
   sanitizeOps: false,

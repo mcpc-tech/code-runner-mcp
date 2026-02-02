@@ -67,24 +67,33 @@ export async function runPy(
 
   // Inject custom handlers into Python environment
   if (options?.handlers) {
-    for (const [name, fn] of Object.entries(options.handlers)) {
-      // Wrap handler to handle async functions and convert return values
-      // deno-lint-ignore no-explicit-any
-      const wrappedFn = (...args: any[]) => {
-        // Convert Python proxies to JS values before passing to handler
-        const convertedArgs = args.map((arg) => {
-          if (arg && typeof arg === "object" && arg.toJs) {
-            // Convert PyProxy to JS object
-            return arg.toJs({ dict_converter: Object.fromEntries });
-          }
-          return arg;
-        });
-
-        const result = fn(...convertedArgs);
-        return result;
+    // deno-lint-ignore no-explicit-any
+    const wrapHandler = (fn: (...args: any[]) => any) => {
+      return (...args: unknown[]) => {
+        // Convert PyProxy args to JS
+        // deno-lint-ignore no-explicit-any
+        const jsArgs = args.map((a) => (a as any)?.toJs?.() ?? a);
+        return fn(...jsArgs);
       };
+    };
 
-      pyodide.globals.set(name, wrappedFn);
+    // Python wrapper: convert return value to Python dict
+    const pythonWrap = pyodide.runPython(`
+from pyodide.ffi import JsProxy
+import inspect
+
+def wrap(fn):
+    def wrapper(*args):
+        result = fn(*args)
+        if inspect.isawaitable(result):
+            return result.then(lambda r: r.to_py() if isinstance(r, JsProxy) else r)
+        return result.to_py() if isinstance(result, JsProxy) else result
+    return wrapper
+wrap
+    `);
+
+    for (const [name, fn] of Object.entries(options.handlers)) {
+      pyodide.globals.set(name, pythonWrap(wrapHandler(fn)));
     }
   }
 
