@@ -17,10 +17,13 @@ export const getPyodide = async (): Promise<PyodideInterface> => {
       ? `${customPackageBaseUrl.replace(/\/$/, "")}/` // Ensure trailing slash
       : `https://fastly.jsdelivr.net/pyodide/v${pyodideVersion}/full/`;
 
+    // Support custom package cache directory (Pyodide v0.28.1+)
+    // Can be specified via environment variable PYODIDE_PACKAGE_CACHE_DIR
+    const packageCacheDir = process.env.PYODIDE_PACKAGE_CACHE_DIR;
+
     pyodideInstance = loadPyodide({
-      // TODO: will be supported when v0.28.1 is released: https://github.com/pyodide/pyodide/commit/7be415bd4e428dc8e36d33cfc1ce2d1de10111c4
-      // @ts-ignore: Pyodide types may not include all configuration options
       packageBaseUrl,
+      ...(packageCacheDir && { packageCacheDir }),
     });
   }
   return pyodideInstance;

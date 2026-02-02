@@ -3,20 +3,20 @@
 [![JSR](https://jsr.io/badges/@mcpc/code-runner-mcp)](https://jsr.io/@mcpc/code-runner-mcp)
 [![npm](https://img.shields.io/npm/v/@mcpc-tech/code-runner-mcp)](https://www.npmjs.com/package/@mcpc-tech/code-runner-mcp)
 
-🚀 **Let AI execute JavaScript/Python code with any package imports!**
+Let AI execute JavaScript/Python code with any package imports!
 
 <img src="./logo.png" width="200" height="200" alt="code-runner-logo">
 
-## ✨ Core Value
+## Core Value
 
-- **🔒 Secure Sandbox**: Isolated execution environment protecting your host
+- **Secure Sandbox**: Isolated execution environment protecting your host
   system
-- **📦 Install-on-Demand**: Dynamically import any npm/PyPI packages
-- **🎯 Reduce Hallucinations**: Let AI verify logic by executing code
-- **⚡ Quick Validation**: Test if packages meet your needs without local
+- **Install-on-Demand**: Dynamically import any npm/PyPI packages
+- **Reduce Hallucinations**: Let AI verify logic by executing code
+- **Quick Validation**: Test if packages meet your needs without local
   installation
 
-## 📦 Installation
+## Installation
 
 ### JSR (Recommended)
 
@@ -34,7 +34,7 @@ npm install @mcpc-tech/code-runner-mcp
 
 Package: `@mcpc-tech/code-runner-mcp`
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option 1: Using Deno (Recommended)
 
@@ -78,7 +78,7 @@ Package: `@mcpc-tech/code-runner-mcp`
 > **Note**: `NODE_OPTIONS=--experimental-wasm-stack-switching` is required for
 > Pyodide (WebAssembly Python runtime) to work properly in Node.js.
 
-## 💡 Use Cases
+## Use Cases
 
 ### JavaScript/TypeScript
 
@@ -122,15 +122,16 @@ files = os.listdir('/tmp')  # List files at the mount point
 print(f"Found {len(files)} files")
 ```
 
-## ⚙️ Environment Variables
+## Environment Variables
 
-| Variable                       | Description                                                                                                   | Default |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------- |
-| **`ALLOWED_TOOLS`**            | Selectively enable tools: `all`, `python`, `javascript`, `js`, or comma-separated (e.g., `python,javascript`) | `all`   |
-| **`DENO_PERMISSION_ARGS`**     | Additional Deno permissions for JS/TS execution (e.g., `--allow-net`, `--allow-all`)                          | -       |
-| **`NODEFS_ROOT`**              | Host file system root directory path for Python access                                                        | -       |
-| **`NODEFS_MOUNT_POINT`**       | Mount point path in Python environment (defaults to `NODEFS_ROOT`)                                            | -       |
-| **`PYODIDE_PACKAGE_BASE_URL`** | Custom package download source for Pyodide (e.g., private mirror CDN)                                         | -       |
+| Variable                        | Description                                                                                                   | Default |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------- |
+| **`ALLOWED_TOOLS`**             | Selectively enable tools: `all`, `python`, `javascript`, `js`, or comma-separated (e.g., `python,javascript`) | `all`   |
+| **`DENO_PERMISSION_ARGS`**      | Additional Deno permissions for JS/TS execution (e.g., `--allow-net`, `--allow-all`)                          | -       |
+| **`NODEFS_ROOT`**               | Host file system root directory path for Python access                                                        | -       |
+| **`NODEFS_MOUNT_POINT`**        | Mount point path in Python environment (defaults to `NODEFS_ROOT`)                                            | -       |
+| **`PYODIDE_PACKAGE_BASE_URL`**  | Custom package download source for Pyodide (e.g., private mirror CDN)                                         | -       |
+| **`PYODIDE_PACKAGE_CACHE_DIR`** | Custom package cache directory for Pyodide packages (Pyodide v0.28.1+)                                        | -       |
 
 ### Tool Selection Examples
 
@@ -145,13 +146,13 @@ print(f"Found {len(files)} files")
 { "ALLOWED_TOOLS": "python,javascript" }
 ```
 
-## 🛡️ Security Features
+## Security Features
 
 - **Deno Sandbox**: Strict permission control with explicit authorization
 - **Pyodide WASM**: WebAssembly isolated environment
 - **File System Isolation**: Controlled host file access
 
-## 📋 Technical Architecture
+## Technical Architecture
 
 - **JavaScript/TypeScript**: Powered by [Deno](https://deno.land/) runtime
 - **Python**: Powered by [Pyodide](https://pyodide.org/) WebAssembly technology
@@ -159,7 +160,7 @@ print(f"Found {len(files)} files")
 
 ---
 
-💬 **Issues & Feedback**:
-[GitHub Issues](https://github.com/mcpc-tech/code-runner-mcp/issues)\
-🌟 **Repository**:
+**Issues & Feedback**:
+[GitHub Issues](https://github.com/mcpc-tech/code-runner-mcp/issues)  
+**Repository**:
 [GitHub Repository](https://github.com/mcpc-tech/code-runner-mcp)
