@@ -1,0 +1,14 @@
+{
+  "packages": [
+    {
+      "name": "@mcpc/code-runner-mcp",
+      "version": "latest",
+      "bin": {
+        "code-runner-mcp": "./src/stdio.server.ts"
+      },
+      "packageJson": {
+        "name": "@mcpc-tech/code-runner-mcp"
+      }
+    }
+  ]
+}
