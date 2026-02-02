@@ -1,6 +1,6 @@
 {
   "name": "@mcpc/code-runner-mcp",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "nodeModulesDir": "auto",
   "description": "Run Javascript/Python code in a secure sandbox, with support for importing **any package**! 🚀",
   "tasks": {
@@ -20,6 +20,7 @@
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.8.0",
     "@std/cli": "jsr:@std/cli@^1.0.0",
     "deno": "npm:deno@^2.6.7",
+    "env-paths": "npm:env-paths@^4.0.0",
     "json-schema-to-zod": "npm:json-schema-to-zod@^2.6.1",
     "pyodide": "npm:pyodide@^0.29.0",
     "zod": "npm:zod@^3.24.2"

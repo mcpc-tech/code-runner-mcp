@@ -1,29 +1,48 @@
 import {
   loadPyodide,
+  type PyodideConfig,
   type PyodideInterface,
   version as pyodideVersion,
 } from "pyodide";
 import process from "node:process";
+import envPaths from "env-paths";
 
 let pyodideInstance: Promise<PyodideInterface> | null = null;
 
+// Get system cache directory for pyodide packages
+const paths = envPaths("pyodide", { suffix: "" });
+
+/**
+ * Get or initialize the Pyodide instance.
+ *
+ * Note: Pyodide is a singleton. The `config` parameter only takes effect
+ * on the first call. Subsequent calls will return the existing instance
+ * and ignore any config passed.
+ *
+ * @param config Optional Pyodide configuration (only used on first initialization)
+ */
 // deno-lint-ignore require-await
-export const getPyodide = async (): Promise<PyodideInterface> => {
+export const getPyodide = async (
+  config?: PyodideConfig,
+): Promise<PyodideInterface> => {
   if (!pyodideInstance) {
     // Support custom package download source (e.g., using private mirror)
     // Can be specified via environment variable PYODIDE_PACKAGE_BASE_URL
     const customPackageBaseUrl = process.env.PYODIDE_PACKAGE_BASE_URL;
-    const packageBaseUrl = customPackageBaseUrl
+    const defaultPackageBaseUrl = customPackageBaseUrl
       ? `${customPackageBaseUrl.replace(/\/$/, "")}/` // Ensure trailing slash
       : `https://fastly.jsdelivr.net/pyodide/v${pyodideVersion}/full/`;
 
     // Support custom package cache directory (Pyodide v0.28.1+)
     // Can be specified via environment variable PYODIDE_PACKAGE_CACHE_DIR
-    const packageCacheDir = process.env.PYODIDE_PACKAGE_CACHE_DIR;
+    // Default: system cache directory to avoid creating cache in every working directory
+    const defaultPackageCacheDir = process.env.PYODIDE_PACKAGE_CACHE_DIR ||
+      paths.cache;
 
     pyodideInstance = loadPyodide({
-      packageBaseUrl,
-      ...(packageCacheDir && { packageCacheDir }),
+      packageBaseUrl: defaultPackageBaseUrl,
+      packageCacheDir: defaultPackageCacheDir,
+      ...config,
     });
   }
   return pyodideInstance;

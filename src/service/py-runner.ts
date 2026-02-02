@@ -60,7 +60,7 @@ export async function runPy(
     signal = abortSignal;
   }
 
-  const pyodide = await getPyodide();
+  const pyodide = await getPyodide(options?.pyodide);
 
   // Set up file system if options provided
   if (options) {
