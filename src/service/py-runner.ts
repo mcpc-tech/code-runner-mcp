@@ -1,4 +1,4 @@
-import type { PyodideInterface } from "pyodide";
+import type { PyodideConfig, PyodideInterface } from "pyodide";
 import { getPip, getPyodide, loadDeps, makeStream } from "../tool/py.ts";
 
 // const EXEC_TIMEOUT = 1000;
@@ -25,6 +25,8 @@ export interface RunPyOptions {
   /** Custom JavaScript handlers to inject into Python environment */
   // deno-lint-ignore no-explicit-any
   handlers?: Record<string, (...args: any[]) => unknown>;
+  /** Pyodide-specific configuration options (passed to loadPyodide) */
+  pyodide?: PyodideConfig;
 }
 
 /**

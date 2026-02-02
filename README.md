@@ -9,8 +9,7 @@ Let AI execute JavaScript/Python code with any package imports!
 
 ## Core Value
 
-- **Secure Sandbox**: Isolated execution environment protecting your host
-  system
+- **Secure Sandbox**: Isolated execution environment protecting your host system
 - **Install-on-Demand**: Dynamically import any npm/PyPI packages
 - **Reduce Hallucinations**: Let AI verify logic by executing code
 - **Quick Validation**: Test if packages meet your needs without local
@@ -161,6 +160,6 @@ print(f"Found {len(files)} files")
 ---
 
 **Issues & Feedback**:
-[GitHub Issues](https://github.com/mcpc-tech/code-runner-mcp/issues)  
+[GitHub Issues](https://github.com/mcpc-tech/code-runner-mcp/issues)\
 **Repository**:
 [GitHub Repository](https://github.com/mcpc-tech/code-runner-mcp)
