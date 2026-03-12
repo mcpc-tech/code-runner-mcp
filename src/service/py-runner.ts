@@ -168,12 +168,16 @@ wrap
       // This sends output immediately instead of batching it
       pyodide.setStdout({
         batched: (data: string) => {
-          // Process output in smaller chunks to prevent OSError
+          // Pyodide batched callback may emit line content without trailing "\n".
+          // Preserve print() line breaks by restoring a trailing newline when missing.
+          const needsTrailingNewline = !data.endsWith("\n");
           const lines = data.split("\n");
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            if (line || i < lines.length - 1) { // Include empty lines except the last one
-              push("")(line + (i < lines.length - 1 ? "\n" : ""));
+            const isLast = i === lines.length - 1;
+            const suffix = !isLast || needsTrailingNewline ? "\n" : "";
+            if (line || suffix) {
+              push("")(line + suffix);
             }
           }
         },
@@ -181,12 +185,15 @@ wrap
 
       pyodide.setStderr({
         batched: (data: string) => {
-          // Process stderr output in smaller chunks too
+          // Keep stderr line boundaries and ensure each batched line remains separated.
+          const needsTrailingNewline = !data.endsWith("\n");
           const lines = data.split("\n");
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            if (line || i < lines.length - 1) {
-              push("[stderr] ")(line + (i < lines.length - 1 ? "\n" : ""));
+            const isLast = i === lines.length - 1;
+            const suffix = !isLast || needsTrailingNewline ? "\n" : "";
+            if (line || suffix) {
+              push("[stderr] ")(line + suffix);
             }
           }
         },

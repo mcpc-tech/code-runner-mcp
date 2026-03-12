@@ -1,4 +1,4 @@
-import { assertStringIncludes } from "./setup.ts";
+import { assertEquals, assertStringIncludes } from "./setup.ts";
 import { readStreamWithTimeout } from "./setup.ts";
 import { runPy } from "../src/service/py-runner.ts";
 
@@ -29,6 +29,20 @@ print("Line 3")
     assertStringIncludes(output, "Line 1");
     assertStringIncludes(output, "Line 2");
     assertStringIncludes(output, "Line 3");
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+Deno.test({
+  name: "Python Runner - Preserves Print Line Breaks",
+  async fn() {
+    const code = `print(1)
+print(1)`;
+    const stream = await runPy(code);
+    const output = await readStreamWithTimeout(stream, 10000);
+
+    assertEquals(output, "1\n1\n");
   },
   sanitizeResources: false,
   sanitizeOps: false,
