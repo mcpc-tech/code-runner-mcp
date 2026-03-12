@@ -3,6 +3,14 @@
   "version": "0.1.9",
   "nodeModulesDir": "auto",
   "description": "Run Javascript/Python code in a secure sandbox, with support for importing **any package**! 🚀",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcpc-tech/code-runner-mcp"
+  },
+  "homepage": "https://github.com/mcpc-tech/code-runner-mcp",
+  "bugs": {
+    "url": "https://github.com/mcpc-tech/code-runner-mcp/issues"
+  },
   "tasks": {
     "server:watch": "deno -A --watch ./src/server.ts",
     "server:compile": "echo no need to compile",

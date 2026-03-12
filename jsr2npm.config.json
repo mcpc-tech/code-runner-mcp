@@ -8,6 +8,14 @@
       },
       "packageJson": {
         "name": "@mcpc-tech/code-runner-mcp",
+        "repository": {
+          "type": "git",
+          "url": "https://github.com/mcpc-tech/code-runner-mcp"
+        },
+        "homepage": "https://github.com/mcpc-tech/code-runner-mcp",
+        "bugs": {
+          "url": "https://github.com/mcpc-tech/code-runner-mcp/issues"
+        },
         "dependencies": {
           "deno": "^2.6.7"
         }
