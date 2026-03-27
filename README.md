@@ -61,7 +61,13 @@ Package: `@mcpc-tech/code-runner-mcp`
   "mcpServers": {
     "code-runner": {
       "command": "npx",
-      "args": ["-y", "deno", "run", "--allow-all", "npm:@mcpc-tech/code-runner-mcp@latest"],
+      "args": [
+        "-y",
+        "deno",
+        "run",
+        "--allow-all",
+        "npm:@mcpc-tech/code-runner-mcp@latest"
+      ],
       "env": {
         "DENO_PERMISSION_ARGS": "--allow-net",
         "NODEFS_ROOT": "/tmp",
@@ -73,7 +79,9 @@ Package: `@mcpc-tech/code-runner-mcp`
 }
 ```
 
-> **Note**: Uses `npx` to install and run Deno on demand — no separate Deno installation required. `--experimental-wasm-stack-switching` cannot be passed via `NODE_OPTIONS` (Node.js rejects it), but works as a direct CLI flag.
+> **Note**: Uses `npx` to install and run Deno on demand — no separate Deno
+> installation required. `--experimental-wasm-stack-switching` cannot be passed
+> via `NODE_OPTIONS` (Node.js rejects it), but works as a direct CLI flag.
 
 ## Use Cases
 

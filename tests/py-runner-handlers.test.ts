@@ -347,6 +347,7 @@ asyncio.run(main())
 
     const stream = await runPy(code, {
       handlers: {
+        // deno-lint-ignore require-await
         get_data: async () => ({
           data: {
             success: true,
