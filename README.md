@@ -61,9 +61,8 @@ Package: `@mcpc-tech/code-runner-mcp`
   "mcpServers": {
     "code-runner": {
       "command": "npx",
-      "args": ["-y", "@mcpc-tech/code-runner-mcp"],
+      "args": ["-y", "deno", "run", "--allow-all", "npm:@mcpc-tech/code-runner-mcp@latest"],
       "env": {
-        "NODE_OPTIONS": "--experimental-wasm-stack-switching",
         "DENO_PERMISSION_ARGS": "--allow-net",
         "NODEFS_ROOT": "/tmp",
         "NODEFS_MOUNT_POINT": "/tmp"
@@ -74,8 +73,7 @@ Package: `@mcpc-tech/code-runner-mcp`
 }
 ```
 
-> **Note**: `NODE_OPTIONS=--experimental-wasm-stack-switching` is required for
-> Pyodide (WebAssembly Python runtime) to work properly in Node.js.
+> **Note**: Uses `npx` to install and run Deno on demand — no separate Deno installation required. `--experimental-wasm-stack-switching` cannot be passed via `NODE_OPTIONS` (Node.js rejects it), but works as a direct CLI flag.
 
 ## Use Cases
 
