@@ -1,5 +1,10 @@
 import type { PyodideConfig, PyodideInterface } from "pyodide";
+import process from "node:process";
 import { getPip, getPyodide, loadDeps, makeStream } from "../tool/py.ts";
+
+const debug = (...args: unknown[]) => {
+  if (process.env.DEBUG) console.log(...args);
+};
 
 // const EXEC_TIMEOUT = 1000;
 const EXEC_TIMEOUT = 1000 * 60 * 3; // 3 minutes for heavy imports like pandas
@@ -141,9 +146,9 @@ wrap
   const stream = makeStream(
     signal,
     (ctrl) => {
-      console.log("[start][py] streaming & timeout");
+      debug("[start][py] streaming & timeout");
       const timeout = setTimeout(() => {
-        console.log(`[err][py] timeout`);
+        debug(`[err][py] timeout`);
         if (!streamClosed) {
           try {
             controller.enqueue(encoder.encode("[err][py] timeout"));
@@ -291,7 +296,7 @@ function setupPyodideFileSystem(
         { root: options.nodeFSRoot },
         mountPoint,
       );
-      console.log(
+      debug(
         `[py] Mounted Node.js FS from ${options.nodeFSRoot} to ${mountPoint}`,
       );
     } catch (err) {

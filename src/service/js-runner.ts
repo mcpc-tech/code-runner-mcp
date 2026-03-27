@@ -3,7 +3,7 @@ import { makeStream } from "../tool/py.ts";
 import type { Buffer } from "node:buffer";
 import path, { join } from "node:path";
 import { mkdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 import process from "node:process";
 import { tmpdir } from "node:os";
 
@@ -16,22 +16,26 @@ mkdirSync(cwd, { recursive: true });
 const EXEC_TIMEOUT = 1000 * 60 * 1;
 
 const encoder = new TextEncoder();
+const debug = (...args: unknown[]) => {
+  if (process.env.DEBUG) console.log(...args);
+};
 
 /**
- * Get Deno binary path from npm package
+ * Get Deno binary path.
+ *
+ * - Node.js (npx): resolve via `createRequire` from the bundled `deno` npm package
+ * - Deno / JSR: use `Deno.execPath()` (the currently running binary)
  */
 function getDenoBinaryPath(): string {
-  // @ts-ignore import.meta.resolve might not be available in all environments
-  const resolver = import.meta.resolve;
-  if (!resolver) {
-    throw new Error(
-      "Cannot resolve deno package: import.meta.resolve not available",
-    );
+  // deno-lint-ignore no-explicit-any
+  const denoGlobal = (globalThis as any).Deno;
+  if (denoGlobal) {
+    return denoGlobal.execPath();
   }
-
-  const pkgUrl = resolver("deno/package.json");
-  const denoDir = path.dirname(fileURLToPath(pkgUrl));
-  return path.join(denoDir, "bin.cjs");
+  // Node.js environment: resolve from bundled deno npm package
+  const require = createRequire(import.meta.url);
+  const pkgJson = require.resolve("deno/package.json");
+  return path.join(path.dirname(pkgJson), "bin.cjs");
 }
 
 /**
@@ -43,7 +47,7 @@ export function runJS(
   abortSignal?: AbortSignal,
 ): ReadableStream<Uint8Array> {
   // Launch Deno: `deno run --quiet -` reads the script from stdin
-  console.log("[start][js] spawn");
+  debug("[start][js] spawn");
   const userProvidedPermissions =
     process.env.DENO_PERMISSION_ARGS?.split(" ") ?? [];
   const selfPermissions = [`--allow-read=${cwd}/`, `--allow-write=${cwd}/`];
@@ -72,7 +76,7 @@ export function runJS(
   );
 
   // Log the actual command being run
-  console.log(
+  debug(
     `[start][js] command: ${denoBinary} run --quiet --allow-read="${cwd}/" --allow-write="${cwd}/" -`,
   );
 
@@ -120,9 +124,9 @@ export function runJS(
   const stream = makeStream(
     abortSignal,
     (controller) => {
-      console.log(`[start][js] cwd: ${cwd}`);
+      debug(`[start][js] cwd: ${cwd}`);
       const timeout = setTimeout(() => {
-        console.log(`[err][js] timeout`);
+        debug(`[err][js] timeout`);
         forward(controller)("[err][js] timeout");
         controller.close();
         proc.kill();
