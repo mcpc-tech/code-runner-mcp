@@ -17,7 +17,20 @@ Let AI execute JavaScript/Python code with any package imports!
 
 ## Installation
 
-### JSR (Recommended)
+### Agent Skill — skills.sh (Recommended for AI agents)
+
+Install the bundled agent skill so your AI assistant knows how to use
+`code-runner-mcp` out of the box:
+
+```bash
+npx skills add mcpc-tech/code-runner-mcp
+```
+
+This installs the skill into your project's `.agent/skills/` directory.
+Compatible with Claude Code, Cursor, Windsurf, GitHub Copilot, VS Code, and
+[more](https://skills.sh).
+
+### JSR
 
 ```bash
 deno add jsr:@mcpc/code-runner-mcp

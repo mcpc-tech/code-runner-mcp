@@ -1,6 +1,6 @@
 {
   "name": "@mcpc/code-runner-mcp",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "nodeModulesDir": "auto",
   "description": "Run Javascript/Python code in a secure sandbox, with support for importing **any package**! 🚀",
   "repository": {
@@ -14,6 +14,7 @@
   "tasks": {
     "server:watch": "deno -A --watch ./src/server.ts",
     "server:compile": "echo no need to compile",
+    "cli": "deno run --allow-all ./src/cli.ts",
     "test": "deno run --allow-all tests/run-tests.ts",
     "test:basic": "deno run --allow-all tests/run-basic-tests.ts",
     "test:watch": "deno run --allow-all tests/run-tests.ts --watch",
@@ -36,7 +37,8 @@
   "exports": {
     ".": "./mod.ts",
     "./server": "./src/server.ts",
-    "./bin": "./src/stdio.server.ts"
+    "./bin": "./src/stdio.server.ts",
+    "./cli": "./src/cli.ts"
   },
   "allowScripts": ["npm:deno@2.5.7"]
 }
