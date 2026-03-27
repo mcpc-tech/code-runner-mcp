@@ -1,6 +1,6 @@
 {
   "name": "@mcpc/code-runner-mcp",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "nodeModulesDir": "auto",
   "description": "Run Javascript/Python code in a secure sandbox, with support for importing **any package**! 🚀",
   "repository": {
@@ -40,5 +40,5 @@
     "./bin": "./src/stdio.server.ts",
     "./cli": "./src/cli.ts"
   },
-  "allowScripts": ["npm:deno@2.5.7"]
+  "allowScripts": ["npm:deno"]
 }
