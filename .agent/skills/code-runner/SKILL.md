@@ -30,6 +30,12 @@ Both tools return combined stdout + stderr as text.
 > - Install: `npm i -g deno`
 > - Or skip install entirely: replace `deno run --allow-all` with
 >   `npx -y deno run --allow-all`
+>
+> **Silent mode** — suppress Deno's download/progress output:
+>
+> ```bash
+> deno run --allow-all --quiet jsr:@mcpc/code-runner-mcp/cli js "console.log('hello')"
+> ```
 
 ```bash
 # Inline code
@@ -132,6 +138,7 @@ Set these when starting the MCP server or before running the CLI:
 | `NODEFS_MOUNT_POINT`        | Where to mount it in Pyodide FS                             |
 | `PYODIDE_PACKAGE_CACHE_DIR` | Custom cache dir for Pyodide packages                       |
 | `PYODIDE_PACKAGE_BASE_URL`  | Custom CDN mirror for Pyodide packages                      |
+| `DEBUG`                     | Set to any value to enable verbose runner logs              |
 
 ## Gotchas
 
