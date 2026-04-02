@@ -3,7 +3,6 @@ import { makeStream } from "../tool/py.ts";
 import type { Buffer } from "node:buffer";
 import path, { join } from "node:path";
 import { mkdirSync } from "node:fs";
-import { createRequire } from "node:module";
 import process from "node:process";
 import { tmpdir } from "node:os";
 
@@ -20,22 +19,51 @@ const debug = (...args: unknown[]) => {
   if (process.env.DEBUG) console.log(...args);
 };
 
+type DenoRuntime = {
+  command: string;
+  prefixArgs: string[];
+};
+
 /**
- * Get Deno binary path.
+ * Resolve how to invoke Deno.
  *
- * - Node.js (npx): resolve via `createRequire` from the bundled `deno` npm package
  * - Deno / JSR: use `Deno.execPath()` (the currently running binary)
+ * - Node.js / npm: resolve the bundled `deno/bin.cjs` and run it via `node`
  */
-function getDenoBinaryPath(): string {
+function getDenoRuntime(): DenoRuntime {
   // deno-lint-ignore no-explicit-any
   const denoGlobal = (globalThis as any).Deno;
   if (denoGlobal) {
-    return denoGlobal.execPath();
+    return { command: denoGlobal.execPath(), prefixArgs: [] };
   }
-  // Node.js environment: resolve from bundled deno npm package
-  const require = createRequire(import.meta.url);
-  const pkgJson = require.resolve("deno/package.json");
-  return path.join(path.dirname(pkgJson), "bin.cjs");
+
+  // Prefer Node's built-in module loader so npm users always use the bundled dependency.
+  // deno-lint-ignore no-explicit-any
+  const getBuiltinModule = (process as any).getBuiltinModule;
+  const moduleBuiltin = getBuiltinModule?.("module") ??
+    getBuiltinModule?.("node:module");
+  const createRequire = moduleBuiltin?.createRequire;
+  if (typeof createRequire === "function") {
+    const nodeRequire = createRequire(import.meta.url);
+    return {
+      command: process.execPath,
+      prefixArgs: [nodeRequire.resolve("deno/bin.cjs")],
+    };
+  }
+
+  // Fallback for CJS bundles that expose `require` globally.
+  // deno-lint-ignore no-explicit-any
+  const nodeRequire = (globalThis as any).require;
+  if (typeof nodeRequire?.resolve === "function") {
+    return {
+      command: process.execPath,
+      prefixArgs: [nodeRequire.resolve("deno/bin.cjs")],
+    };
+  }
+
+  throw new Error(
+    'Failed to resolve bundled "deno" dependency. Please reinstall `@mcpc-tech/code-runner-mcp`.',
+  );
 }
 
 /**
@@ -46,44 +74,13 @@ export function runJS(
   code: string,
   abortSignal?: AbortSignal,
 ): ReadableStream<Uint8Array> {
-  // Launch Deno: `deno run --quiet -` reads the script from stdin
   debug("[start][js] spawn");
   const userProvidedPermissions =
     process.env.DENO_PERMISSION_ARGS?.split(" ") ?? [];
   const selfPermissions = [`--allow-read=${cwd}/`, `--allow-write=${cwd}/`];
-
-  // Note: --allow-* cannot be used with '--allow-all'
   const allowAll = userProvidedPermissions.includes("--allow-all");
-  const denoBinary = getDenoBinaryPath();
-  const proc = spawn(
-    denoBinary,
-    [
-      "run",
-      `--quiet`,
-      ...(allowAll
-        ? userProvidedPermissions
-        : selfPermissions.concat(userProvidedPermissions)),
-      "-",
-    ],
-    {
-      stdio: ["pipe", "pipe", "pipe"],
-      cwd,
-      env: {
-        ...process.env,
-        DENO_DIR: join(cwd, ".deno"),
-      },
-    },
-  );
 
-  // Log the actual command being run
-  debug(
-    `[start][js] command: ${denoBinary} run --quiet --allow-read="${cwd}/" --allow-write="${cwd}/" -`,
-  );
-
-  // Feed provided code to Deno
-  proc.stdin.write(code);
-  proc.stdin.end();
-
+  let proc: ReturnType<typeof spawn>;
   let streamClosed = false;
   let errorBuffer = "";
 
@@ -116,15 +113,42 @@ export function runJS(
           : new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
         controller.enqueue(data);
       } catch {
-        // Stream is already closed, ignore
         streamClosed = true;
       }
     };
 
-  const stream = makeStream(
+  return makeStream(
     abortSignal,
     (controller) => {
+      const runtime = getDenoRuntime();
+      const commandArgs = [
+        ...runtime.prefixArgs,
+        "run",
+        `--quiet`,
+        ...(allowAll
+          ? userProvidedPermissions
+          : selfPermissions.concat(userProvidedPermissions)),
+        "-",
+      ];
+      debug(`[start][js] command: ${runtime.command} ${commandArgs.join(" ")}`);
       debug(`[start][js] cwd: ${cwd}`);
+
+      proc = spawn(
+        runtime.command,
+        commandArgs,
+        {
+          stdio: ["pipe", "pipe", "pipe"],
+          cwd,
+          env: {
+            ...process.env,
+            DENO_DIR: join(cwd, ".deno"),
+          },
+        },
+      );
+
+      proc.stdin!.write(code);
+      proc.stdin!.end();
+
       const timeout = setTimeout(() => {
         debug(`[err][js] timeout`);
         forward(controller)("[err][js] timeout");
@@ -132,8 +156,8 @@ export function runJS(
         proc.kill();
       }, EXEC_TIMEOUT);
 
-      proc.stdout.on("data", forward(controller));
-      proc.stderr.on("data", forward(controller, "[stderr] "));
+      proc.stdout!.on("data", forward(controller));
+      proc.stderr!.on("data", forward(controller, "[stderr] "));
       proc.on("close", () => {
         clearTimeout(timeout);
         if (streamClosed) return;
@@ -156,10 +180,7 @@ export function runJS(
       });
     },
     () => {
-      // Abort cleanup – kill the subprocess
-      proc.kill();
+      proc?.kill();
     },
   );
-
-  return stream;
 }
