@@ -2,7 +2,11 @@ export * from "./src/app.ts";
 
 // Runner functions
 export { runPy, type RunPyOptions } from "./src/service/py-runner.ts";
-export { cwd as jsCwd, runJS } from "./src/service/js-runner.ts";
+export {
+  cwd as jsCwd,
+  runJS,
+  type RunJSOptions,
+} from "./src/service/js-runner.ts";
 
 // Utilities
 export {

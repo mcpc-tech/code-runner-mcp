@@ -5,6 +5,7 @@ import path, { join } from "node:path";
 import { mkdirSync } from "node:fs";
 import process from "node:process";
 import { tmpdir } from "node:os";
+import { Sandbox } from "@mcpc/handle-sandbox";
 
 const projectRoot: string = tmpdir();
 export const cwd: string = path.join(projectRoot, ".deno_runner_tmp");
@@ -67,10 +68,172 @@ function getDenoRuntime(): DenoRuntime {
 }
 
 /**
- * Run arbitrary JavaScript using Deno and **stream**
- * its stdout / stderr.
+ * Options for running JavaScript code
+ */
+export interface RunJSOptions {
+  /** Custom JavaScript handlers injected into the sandbox as global async functions */
+  // deno-lint-ignore no-explicit-any
+  handlers?: Record<string, (...args: any[]) => unknown>;
+}
+
+/**
+ * Run arbitrary JavaScript using Deno and **stream** its stdout / stderr.
+ *
+ * When `options.handlers` is provided the sandbox uses JSON-RPC IPC
+ * (via `@mcpc/handle-sandbox`) so that handler functions defined in the host
+ * process can be called from inside the sandboxed code as plain async globals.
+ *
+ * Without handlers the original sub-process pipe path is used, preserving
+ * full stdout streaming and `--quiet` / permission behaviour.
  */
 export function runJS(
+  code: string,
+  options?: RunJSOptions,
+  abortSignal?: AbortSignal,
+): ReadableStream<Uint8Array>;
+export function runJS(
+  code: string,
+  abortSignal?: AbortSignal,
+): ReadableStream<Uint8Array>;
+export function runJS(
+  code: string,
+  optionsOrSignal?: RunJSOptions | AbortSignal,
+  abortSignal?: AbortSignal,
+): ReadableStream<Uint8Array> {
+  // Normalise overloaded parameters
+  let options: RunJSOptions | undefined;
+  let signal: AbortSignal | undefined;
+
+  if (optionsOrSignal instanceof AbortSignal) {
+    signal = optionsOrSignal;
+  } else {
+    options = optionsOrSignal;
+    signal = abortSignal;
+  }
+
+  if (options?.handlers && Object.keys(options.handlers).length > 0) {
+    return runJSWithHandlers(code, options.handlers, signal);
+  }
+
+  return runJSRaw(code, signal);
+}
+
+// ---------------------------------------------------------------------------
+// Path A: handler-capable sandbox (handle-sandbox JSON-RPC IPC)
+// ---------------------------------------------------------------------------
+
+function runJSWithHandlers(
+  code: string,
+  // deno-lint-ignore no-explicit-any
+  handlers: Record<string, (...args: any[]) => unknown>,
+  abortSignal?: AbortSignal,
+): ReadableStream<Uint8Array> {
+  debug("[start][js/sandbox] spawn with handlers:", Object.keys(handlers));
+
+  const userProvidedPermissions =
+    process.env.DENO_PERMISSION_ARGS?.split(" ").filter(Boolean) ?? [];
+  const selfPermissions = [`--allow-read=${cwd}/`, `--allow-write=${cwd}/`];
+  const allowAll = userProvidedPermissions.includes("--allow-all");
+  const permissions = allowAll
+    ? userProvidedPermissions
+    : selfPermissions.concat(userProvidedPermissions);
+
+  let sandbox: Sandbox;
+  let streamClosed = false;
+  let timeoutId: ReturnType<typeof setTimeout>;
+
+  return makeStream(
+    abortSignal,
+    (controller) => {
+      const enqueue = (text: string) => {
+        if (streamClosed) return;
+        try {
+          controller.enqueue(encoder.encode(text));
+        } catch {
+          streamClosed = true;
+        }
+      };
+
+      const closeStream = () => {
+        if (streamClosed) return;
+        streamClosed = true;
+        clearTimeout(timeoutId);
+        try {
+          controller.close();
+        } catch { /* already closed */ }
+      };
+
+      const errorStream = (err: unknown) => {
+        if (streamClosed) return;
+        streamClosed = true;
+        clearTimeout(timeoutId);
+        try {
+          controller.error(err);
+        } catch { /* already closed */ }
+      };
+
+      sandbox = new Sandbox({
+        timeout: EXEC_TIMEOUT,
+        cwd,
+        env: { ...process.env, DENO_DIR: join(cwd, ".deno") },
+        permissions,
+        extraArgs: ["--quiet"],
+        onLog: (text, level) => {
+          const prefix = level === "log" ? "" : `[${level}] `;
+          enqueue(prefix + text + "\n");
+        },
+        onStderr: (text) => {
+          // Detect permission errors and append helpful hint
+          if (text.includes("Permission denied")) {
+            enqueue(
+              `[stderr] ${text}\n\n**Permission denied!** The Deno runtime restricts file system access.\n\n**Fix:** Use \`${cwd}/\` path only for file operations.`,
+            );
+          } else {
+            enqueue("[stderr] " + text);
+          }
+        },
+      });
+
+      for (const [name, fn] of Object.entries(handlers)) {
+        sandbox.registerHandler(
+          name,
+          fn as (...args: unknown[]) => Promise<unknown>,
+        );
+      }
+
+      sandbox.start();
+
+      timeoutId = setTimeout(() => {
+        debug("[err][js/sandbox] timeout");
+        enqueue("[err][js] timeout\n");
+        sandbox.stop();
+        closeStream();
+      }, EXEC_TIMEOUT);
+
+      sandbox.execute(code).then((result) => {
+        clearTimeout(timeoutId);
+        if (result.error) {
+          enqueue(`[stderr] ${result.error}\n`);
+        }
+        sandbox.stop();
+        closeStream();
+      }).catch((err) => {
+        sandbox?.stop();
+        errorStream(err);
+      });
+    },
+    () => {
+      // abort
+      sandbox?.stop();
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Path B: raw sub-process pipe (no handlers, original behaviour)
+// ---------------------------------------------------------------------------
+
+function runJSRaw(
   code: string,
   abortSignal?: AbortSignal,
 ): ReadableStream<Uint8Array> {

@@ -26,6 +26,7 @@
   "imports": {
     "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.19.2",
     "@mcpc/core": "jsr:@mcpc/core@^0.1.0",
+    "@mcpc/handle-sandbox": "jsr:@mcpc/handle-sandbox@0.0.11",
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.8.0",
     "@std/cli": "jsr:@std/cli@^1.0.0",
     "deno": "npm:deno@^2.6.7",

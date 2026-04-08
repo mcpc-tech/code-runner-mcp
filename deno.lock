@@ -3,10 +3,12 @@
   "specifiers": {
     "jsr:@es-toolkit/es-toolkit@^1.37.2": "1.39.8",
     "jsr:@mcpc/core@0.1": "0.1.0",
-    "jsr:@std/assert@*": "1.0.13",
+    "jsr:@mcpc/handle-sandbox@0.0.11": "0.0.11",
+    "jsr:@std/assert@*": "1.0.19",
     "jsr:@std/cli@*": "1.0.20",
     "jsr:@std/cli@1": "1.0.20",
     "jsr:@std/http@^1.0.14": "1.0.20",
+    "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/internal@^1.0.6": "1.0.9",
     "npm:@ai-sdk/openai@^1.3.7": "1.3.23_zod@3.25.76",
     "npm:@hono/zod-openapi@~0.19.2": "0.19.10_hono@4.8.9_zod@3.25.76",
@@ -56,10 +58,19 @@
         "npm:zod"
       ]
     },
+    "@mcpc/handle-sandbox@0.0.11": {
+      "integrity": "bfa91272110d564cdf9eb573ed069798f42f87a178e705b60bf3aa96feef2bc1"
+    },
     "@std/assert@1.0.13": {
       "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
       "dependencies": [
-        "jsr:@std/internal"
+        "jsr:@std/internal@^1.0.6"
+      ]
+    },
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.12"
       ]
     },
     "@std/cli@1.0.20": {
@@ -70,6 +81,9 @@
     },
     "@std/internal@1.0.9": {
       "integrity": "bdfb97f83e4db7a13e8faab26fb1958d1b80cc64366501af78a0aee151696eb8"
+    },
+    "@std/internal@1.0.12": {
+      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
     }
   },
   "npm": {
@@ -551,6 +565,7 @@
         "@deno/win32-arm64",
         "@deno/win32-x64"
       ],
+      "scripts": true,
       "bin": true
     },
     "depd@2.0.0": {
@@ -1187,6 +1202,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@mcpc/core@0.1",
+      "jsr:@mcpc/handle-sandbox@0.0.11",
       "jsr:@std/cli@1",
       "npm:@hono/zod-openapi@~0.19.2",
       "npm:@modelcontextprotocol/sdk@^1.8.0",
