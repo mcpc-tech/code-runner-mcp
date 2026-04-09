@@ -5,7 +5,7 @@ import path, { join } from "node:path";
 import { mkdirSync } from "node:fs";
 import process from "node:process";
 import { tmpdir } from "node:os";
-import { Sandbox } from "@mcpc/handle-sandbox";
+import { Sandbox } from "@mcpc-tech/handle-sandbox";
 
 const projectRoot: string = tmpdir();
 export const cwd: string = path.join(projectRoot, ".deno_runner_tmp");
@@ -80,7 +80,7 @@ export interface RunJSOptions {
  * Run arbitrary JavaScript using Deno and **stream** its stdout / stderr.
  *
  * When `options.handlers` is provided the sandbox uses JSON-RPC IPC
- * (via `@mcpc/handle-sandbox`) so that handler functions defined in the host
+ * (via `@mcpc-tech/handle-sandbox`) so that handler functions defined in the host
  * process can be called from inside the sandboxed code as plain async globals.
  *
  * Without handlers the original sub-process pipe path is used, preserving

@@ -17,8 +17,7 @@
           "url": "https://github.com/mcpc-tech/code-runner-mcp/issues"
         },
         "dependencies": {
-          "deno": "^2.6.7",
-          "@mcpc-tech/handle-sandbox": "^0.0.11"
+          "deno": "^2.6.7"
         }
       }
     }
