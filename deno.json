@@ -1,6 +1,6 @@
 {
   "name": "@mcpc/code-runner-mcp",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "nodeModulesDir": "auto",
   "description": "Run Javascript/Python code in a secure sandbox, with support for importing **any package**! 🚀",
   "repository": {

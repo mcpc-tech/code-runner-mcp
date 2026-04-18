@@ -1,7 +1,7 @@
 import type { PyodideConfig, PyodideInterface } from "pyodide";
 import process from "node:process";
 import { getPip, getPyodide, loadDeps, makeStream } from "../tool/py.ts";
-import * as log from "../log.ts";
+import { log } from "../log.ts";
 
 const debug = (...args: unknown[]) => {
   if (process.env.DEBUG) log.debug(...args);
@@ -22,6 +22,8 @@ const encoder = new TextEncoder();
  * Options for running Python code
  */
 export interface RunPyOptions {
+  /** Suppress host process console output (debug/warn/info logs) */
+  silent?: boolean;
   /** Physical directory path to mount from the host file system */
   nodeFSRoot?: string;
   /** Virtual directory path in Pyodide's file system to mount to (defaults to nodeFSRoot if not specified) */
@@ -65,6 +67,8 @@ export async function runPy(
     options = optionsOrAbortSignal;
     signal = abortSignal;
   }
+
+  if (options?.silent) log.silent = true;
 
   const pyodide = await getPyodide(options?.pyodide);
 

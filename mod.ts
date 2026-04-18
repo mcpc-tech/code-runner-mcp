@@ -8,6 +8,9 @@ export {
   type RunJSOptions,
 } from "./src/service/js-runner.ts";
 
+// Logger
+export { log } from "./src/log.ts";
+
 // Utilities
 export {
   getJavaScriptPrompt,

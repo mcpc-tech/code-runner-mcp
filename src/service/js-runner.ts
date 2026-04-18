@@ -6,7 +6,7 @@ import { mkdirSync } from "node:fs";
 import process from "node:process";
 import { tmpdir } from "node:os";
 import { Sandbox } from "@mcpc-tech/handle-sandbox";
-import * as log from "../log.ts";
+import { log } from "../log.ts";
 
 const projectRoot: string = tmpdir();
 export const cwd: string = path.join(projectRoot, ".deno_runner_tmp");
@@ -72,6 +72,8 @@ function getDenoRuntime(): DenoRuntime {
  * Options for running JavaScript code
  */
 export interface RunJSOptions {
+  /** Suppress host process console output (debug/warn/info logs) */
+  silent?: boolean;
   /** Custom JavaScript handlers injected into the sandbox as global async functions */
   // deno-lint-ignore no-explicit-any
   handlers?: Record<string, (...args: any[]) => unknown>;
@@ -111,6 +113,8 @@ export function runJS(
     options = optionsOrSignal;
     signal = abortSignal;
   }
+
+  if (options?.silent) log.silent = true;
 
   if (options?.handlers && Object.keys(options.handlers).length > 0) {
     return runJSWithHandlers(code, options.handlers, signal);

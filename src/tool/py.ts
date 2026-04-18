@@ -6,7 +6,7 @@ import {
 } from "pyodide";
 import process from "node:process";
 import envPaths from "env-paths";
-import * as log from "../log.ts";
+import { log } from "../log.ts";
 
 let pyodideInstance: Promise<PyodideInterface> | null = null;
 
