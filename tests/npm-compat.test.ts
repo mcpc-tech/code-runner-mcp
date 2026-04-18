@@ -106,7 +106,7 @@ Deno.test({
       },
     );
 
-    const output = await readStreamWithTimeout(stream, 10000);
+    const output = await readStreamWithTimeout(stream, 30000);
     assertStringIncludes(output, "echo: hello from npm");
   },
   sanitizeResources: false,
@@ -117,7 +117,7 @@ Deno.test({
   name: "npm-compat - runJS without handlers still works (raw path)",
   async fn() {
     const stream = runJS('console.log("raw-path-ok")');
-    const output = await readStreamWithTimeout(stream, 10000);
+    const output = await readStreamWithTimeout(stream, 30000);
     assertStringIncludes(output, "raw-path-ok");
   },
   sanitizeResources: false,

@@ -28,6 +28,15 @@ jobs:
           node-version: "latest"
           registry-url: "https://registry.npmjs.org"
 
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-publish-${{ hashFiles('deno.lock') }}
+
+      - name: Install Dependencies
+        run: deno cache mod.ts
+
       - name: Run tests
         run: deno task test
 
