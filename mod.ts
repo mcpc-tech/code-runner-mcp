@@ -9,7 +9,7 @@ export {
 } from "./src/service/js-runner.ts";
 
 // Logger
-export { log } from "./src/log.ts";
+export { log, type Logger } from "./src/log.ts";
 
 // Utilities
 export {
