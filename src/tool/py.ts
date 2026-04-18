@@ -6,6 +6,7 @@ import {
 } from "pyodide";
 import process from "node:process";
 import envPaths from "env-paths";
+import * as log from "../log.ts";
 
 let pyodideInstance: Promise<PyodideInterface> | null = null;
 
@@ -151,7 +152,7 @@ result`;
       // Try batch installation first for better performance
       try {
         await pip.install(packagesToInstall);
-        console.error(
+        log.error(
           `[py] Successfully installed all packages: ${
             packagesToInstall.join(
               ", ",
@@ -159,7 +160,7 @@ result`;
           }`,
         );
       } catch (_batchError) {
-        console.error(
+        log.error(
           "[py] Batch installation failed, trying individual installation",
         );
 
@@ -167,19 +168,19 @@ result`;
         for (const pkg of packagesToInstall) {
           try {
             await pip.install(pkg);
-            console.error(`[py] Successfully installed: ${pkg}`);
+            log.error(`[py] Successfully installed: ${pkg}`);
           } catch (error) {
-            console.error(`[py] Failed to install ${pkg}:`, error);
+            log.error(`[py] Failed to install ${pkg}:`, error);
             // Continue with other packages
           }
         }
       }
     } else {
-      console.error("[py] No missing imports detected");
+      log.error("[py] No missing imports detected");
     }
   } catch (error) {
     // If dependency loading fails, log but don't fail completely
-    console.error("[py] Failed to load dependencies:", error);
+    log.error("[py] Failed to load dependencies:", error);
     // Continue execution without external dependencies
   }
 };

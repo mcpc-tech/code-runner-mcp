@@ -142,14 +142,15 @@ print(f"Found {len(files)} files")
 
 ## Environment Variables
 
-| Variable                        | Description                                                                                                   | Default |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------- |
-| **`ALLOWED_TOOLS`**             | Selectively enable tools: `all`, `python`, `javascript`, `js`, or comma-separated (e.g., `python,javascript`) | `all`   |
-| **`DENO_PERMISSION_ARGS`**      | Additional Deno permissions for JS/TS execution (e.g., `--allow-net`, `--allow-all`)                          | -       |
-| **`NODEFS_ROOT`**               | Host file system root directory path for Python access                                                        | -       |
-| **`NODEFS_MOUNT_POINT`**        | Mount point path in Python environment (defaults to `NODEFS_ROOT`)                                            | -       |
-| **`PYODIDE_PACKAGE_BASE_URL`**  | Custom package download source for Pyodide (e.g., private mirror CDN)                                         | -       |
-| **`PYODIDE_PACKAGE_CACHE_DIR`** | Custom package cache directory for Pyodide packages (Pyodide v0.28.1+)                                        | -       |
+| Variable                        | Description                                                                                                        | Default |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------- |
+| **`ALLOWED_TOOLS`**             | Selectively enable tools: `all`, `python`, `javascript`, `js`, or comma-separated (e.g., `python,javascript`)      | `all`   |
+| **`DENO_PERMISSION_ARGS`**      | Additional Deno permissions for JS/TS execution (e.g., `--allow-net`, `--allow-all`)                               | -       |
+| **`NODEFS_ROOT`**               | Host file system root directory path for Python access                                                             | -       |
+| **`NODEFS_MOUNT_POINT`**        | Mount point path in Python environment (defaults to `NODEFS_ROOT`)                                                 | -       |
+| **`PYODIDE_PACKAGE_BASE_URL`**  | Custom package download source for Pyodide (e.g., private mirror CDN)                                              | -       |
+| **`PYODIDE_PACKAGE_CACHE_DIR`** | Custom package cache directory for Pyodide packages (Pyodide v0.28.1+)                                             | -       |
+| **`SILENT`**                    | Suppress console log output. Set to `"true"` or `"1"` to silence server-side logs (e.g., package install messages) | -       |
 
 ### Tool Selection Examples
 

@@ -1,9 +1,10 @@
 import type { PyodideConfig, PyodideInterface } from "pyodide";
 import process from "node:process";
 import { getPip, getPyodide, loadDeps, makeStream } from "../tool/py.ts";
+import * as log from "../log.ts";
 
 const debug = (...args: unknown[]) => {
-  if (process.env.DEBUG) console.log(...args);
+  if (process.env.DEBUG) log.debug(...args);
 };
 
 // const EXEC_TIMEOUT = 1000;
@@ -135,7 +136,7 @@ wrap
       }
     } catch (err) {
       // Stream is already closed or errored, ignore
-      console.warn(
+      log.warn(
         "[py] Stream already closed, ignoring output:",
         err instanceof Error ? err.message : String(err),
       );
@@ -158,7 +159,7 @@ wrap
             pyodide.setStdout({});
             pyodide.setStderr({});
           } catch (err) {
-            console.warn(
+            log.warn(
               "[py] Error closing stream on timeout:",
               err instanceof Error ? err.message : String(err),
             );
@@ -300,7 +301,7 @@ function setupPyodideFileSystem(
         `[py] Mounted Node.js FS from ${options.nodeFSRoot} to ${mountPoint}`,
       );
     } catch (err) {
-      console.warn(`[py] Failed to mount Node.js FS:`, err);
+      log.warn(`[py] Failed to mount Node.js FS:`, err);
     }
   }
 }

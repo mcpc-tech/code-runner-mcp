@@ -6,6 +6,7 @@ import { mkdirSync } from "node:fs";
 import process from "node:process";
 import { tmpdir } from "node:os";
 import { Sandbox } from "@mcpc-tech/handle-sandbox";
+import * as log from "../log.ts";
 
 const projectRoot: string = tmpdir();
 export const cwd: string = path.join(projectRoot, ".deno_runner_tmp");
@@ -17,7 +18,7 @@ const EXEC_TIMEOUT = 1000 * 60 * 1;
 
 const encoder = new TextEncoder();
 const debug = (...args: unknown[]) => {
-  if (process.env.DEBUG) console.log(...args);
+  if (process.env.DEBUG) log.debug(...args);
 };
 
 type DenoRuntime = {
