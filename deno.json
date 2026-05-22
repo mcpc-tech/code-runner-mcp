@@ -12,7 +12,6 @@
     "url": "https://github.com/mcpc-tech/code-runner-mcp/issues"
   },
   "tasks": {
-    "server:watch": "deno -A --watch ./src/server.ts",
     "server:compile": "echo no need to compile",
     "cli": "deno run --allow-all ./src/cli.ts",
     "test": "deno run --allow-all tests/run-tests.ts",
@@ -24,20 +23,17 @@
     "test:integration": "deno run --allow-all tests/run-tests.ts --filter 'Integration'"
   },
   "imports": {
-    "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.19.2",
-    "@mcpc/core": "jsr:@mcpc/core@^0.1.0",
     "@mcpc-tech/handle-sandbox": "npm:@mcpc-tech/handle-sandbox@^0.0.11",
-    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.8.0",
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.29.0",
     "@std/cli": "jsr:@std/cli@^1.0.0",
     "deno": "npm:deno@^2.6.7",
     "env-paths": "npm:env-paths@^4.0.0",
     "json-schema-to-zod": "npm:json-schema-to-zod@^2.6.1",
     "pyodide": "npm:pyodide@^0.29.0",
-    "zod": "npm:zod@^3.24.2"
+    "zod": "npm:zod@^4.0.0"
   },
   "exports": {
     ".": "./mod.ts",
-    "./server": "./src/server.ts",
     "./bin": "./src/stdio.server.ts",
     "./cli": "./src/cli.ts"
   },
