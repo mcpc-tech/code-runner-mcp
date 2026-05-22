@@ -39,7 +39,7 @@ export function readStreamWithTimeout(
   stream: ReadableStream<Uint8Array>,
   timeoutMs: number = 5000,
 ): Promise<string> {
-  let timeoutId: number;
+  let timeoutId: ReturnType<typeof setTimeout>;
 
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(
