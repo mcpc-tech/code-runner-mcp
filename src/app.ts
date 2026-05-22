@@ -1,5 +1,3 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { registerAgent } from "./controllers/register.ts";
 import { setUpMcpServer } from "./set-up-mcp.ts";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
@@ -10,12 +8,3 @@ export const server: McpServer = setUpMcpServer(
   },
   { capabilities: { tools: {} } },
 );
-
-export const createApp: () => OpenAPIHono = () => {
-  const app = new OpenAPIHono();
-
-  // Register routes
-  registerAgent(app);
-
-  return app;
-};

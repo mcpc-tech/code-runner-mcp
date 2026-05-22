@@ -22,21 +22,26 @@ export function setUpMcpServer(
   const server = new McpServer(...args);
 
   if (shouldEnableTool("python", allowedTools)) {
-    server.tool(
+    server.registerTool(
       "python-code-runner",
-      getPythonPrompt(nodeFSRoot, nodeFSMountPoint),
-      z.object({
-        code: z.string().describe(
-          "Python code to execute. MUST use print() to see results.",
-        ),
-        packages: z
-          .record(z.string(), z.string())
-          .optional()
-          .describe(
-            'Map import names to PyPI package names. Use when names differ or for indirectly imported packages. Example: {"sklearn": "scikit-learn", "openpyxl": "openpyxl"}',
+      {
+        description: getPythonPrompt(nodeFSRoot, nodeFSMountPoint),
+        inputSchema: z.object({
+          code: z.string().describe(
+            "Python code to execute. MUST use print() to see results.",
           ),
-      }).shape,
-      async ({ code, packages }, extra) => {
+          packages: z
+            .record(z.string(), z.string())
+            .optional()
+            .describe(
+              'Map import names to PyPI package names. Use when names differ or for indirectly imported packages. Example: {"sklearn": "scikit-learn", "openpyxl": "openpyxl"}',
+            ),
+        }),
+      },
+      async (
+        { code, packages }: { code: string; packages?: Record<string, string> },
+        extra: { signal: AbortSignal },
+      ) => {
         const options = nodeFSRoot
           ? {
             nodeFSRoot,
@@ -54,22 +59,27 @@ export function setUpMcpServer(
           output += decoder.decode(chunk);
         }
         return {
-          content: [{ type: "text", text: output || "(no output)" }],
+          content: [{ type: "text" as const, text: output || "(no output)" }],
         };
       },
     );
   }
 
   if (shouldEnableTool("javascript", allowedTools)) {
-    server.tool(
+    server.registerTool(
       "javascript-code-runner",
-      getJavaScriptPrompt(jsCwd, denoPermissionArgs),
-      z.object({
-        code: z.string().describe(
-          "JavaScript/TypeScript code to execute. MUST use console.log() to see results.",
-        ),
-      }).shape,
-      async ({ code }, extra) => {
+      {
+        description: getJavaScriptPrompt(jsCwd, denoPermissionArgs),
+        inputSchema: z.object({
+          code: z.string().describe(
+            "JavaScript/TypeScript code to execute. MUST use console.log() to see results.",
+          ),
+        }),
+      },
+      async (
+        { code }: { code: string },
+        extra: { signal: AbortSignal },
+      ) => {
         const stream = await runJS(code, extra.signal);
         const decoder = new TextDecoder();
         let output = "";
@@ -79,7 +89,7 @@ export function setUpMcpServer(
         const finalOutput = output ||
           "(no output)\n\n**Tip:** Use `console.log()` to see results. Make sure to write output to stdout.";
         return {
-          content: [{ type: "text", text: finalOutput }],
+          content: [{ type: "text" as const, text: finalOutput }],
         };
       },
     );
